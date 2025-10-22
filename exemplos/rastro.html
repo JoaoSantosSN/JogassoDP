@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercício: Rastro dos Pneus</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: #888; overflow: hidden; }
+    canvas { display: block; margin: auto; background: #cfa86b; }
+    h2 { color: white; text-align: center; font-family: Arial; }
+  </style>
+</head>
+<body>
+  <h2>🚗 Rastro dos Pneus</h2>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Estado do "carro" controlável pelo usuário
+    const player = { x: canvas.width/2 - 25, y: canvas.height/2 - 25, width: 50, height: 100, speed: 5 };
+
+    const keys = {};
+    window.addEventListener("keydown", e => { keys[e.key] = true; });
+    window.addEventListener("keyup", e => { keys[e.key] = false; });
+
+    const tireTracks = [];
+    // Array que guarda os rastros deixados pelos pneus
+
+    function movePlayer() {
+      if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+      if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += player.speed;
+      if (keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
+      if (keys['ArrowDown'] && player.y < canvas.height - player.height) player.y += player.speed;
+
+      // Sempre que o carro se move, adiciona rastros dos pneus
+      if (keys['ArrowLeft'] || keys['ArrowRight'] || keys['ArrowUp'] || keys['ArrowDown']) {
+        // Rastro do pneu esquerdo
+        tireTracks.push({ x: player.x + 5, y: player.y + player.height - 5, alpha: 0.5 });
+        // Rastro do pneu direito
+        tireTracks.push({ x: player.x + player.width - 15, y: player.y + player.height - 5, alpha: 0.5 });
+      }
+    }
+
+    function drawTracks() {
+      // Desenha todos os rastros
+      for (let i = 0; i < tireTracks.length; i++) {
+        const track = tireTracks[i];
+        ctx.fillStyle = `rgba(100, 80, 60, ${track.alpha})`; // cor escura tipo terra
+        ctx.fillRect(track.x, track.y, 10, 4); // retângulo do rastro
+        track.alpha -= 0.01; // diminui opacidade
+
+        if (track.alpha <= 0) {
+          // Remove rastros totalmente transparentes
+          tireTracks.splice(i, 1);
+          i--;
+        }
+      }
+    }
+
+    function drawPlayer() {
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function loop() {
+      // Limpa o canvas mantendo a cor de chão
+      ctx.fillStyle = "#cfa86b";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      movePlayer();
+      drawTracks();
+      drawPlayer();
+
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>

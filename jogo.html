@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"> <!-- Define codificação para UTF-8 -->
+  <title>Jogo no Deserto - Tiro para a Direita</title> <!-- Título da aba do navegador -->
+  <meta name="viewport" content="width=device-width,initial-scale=1"> <!-- Responsivo para dispositivos móveis -->
+  <style>
+    html, body { height: 100%; margin: 0; } /* Ocupa toda a tela e remove margens padrão */
+    body { background: #000; display:flex; align-items:center; justify-content:center; } /* Fundo preto e centraliza conteúdo */
+    canvas { display:block; } /* Canvas sem borda ou espaçamento extra */
+    
+    /* Overlay para Game Over */
+    #overlay {
+      position: fixed; top: 0; left: 0; right:0; bottom:0; /* cobre toda a tela */
+      display:flex; align-items:center; justify-content:center; /* centraliza conteúdo */
+      background: rgba(0,0,0,0.6); /* semi-transparente */
+      color: white; font-family: Arial, sans-serif; z-index: 10; /* estilo do texto e sobreposição */
+      visibility: hidden; /* inicialmente escondido */
+      flex-direction: column; gap: 12px; /* itens em coluna com espaçamento */
+    }
+    #overlay.visible { visibility: visible; } /* mostra overlay quando classe 'visible' é adicionada */
+
+    button { padding: 10px 16px; font-size: 16px; border-radius:8px; border:none; cursor:pointer; } /* estilo do botão */
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7); 
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none; 
+    }
+
+    .container {
+        border: 2px solid #333;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        display: grid;
+        grid-template-columns: 2fr 1fr; /* Two columns: one for choices, one for status */
+        gap: 20px;
+        width: 90%;
+        max-width: 1200px;
+    }
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .header h1 {
+        margin: 0;
+        font-size: 2em;
+        color: #333;
+    }
+
+    .header .level {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #555;
+    }
+
+    .card-selection {
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+      flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+    }
+
+    .card {
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 15px;
+      width: 200px;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #444;
+        margin-bottom: 15px;
+    }
+
+    .card-description {
+        font-size: 0.95em;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .cancel-button-wrapper {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+    }
+
+    .cancel-level-button {
+        background-color: #e74c3c;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+    }
+
+    .cancel-level-button:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+    }
+
+    .status-panel {
+        border: 2px solid #333;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f2f2f2;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-panel h2 {
+        margin-top: 0;
+        font-size: 1.8em;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .status-item {
+        margin-bottom: 8px;
+        font-size: 1.05em;
+        color: #444;
+    }
+
+    .status-item strong {
+        color: #222;
+    }
+
+    .separator {
+        border-top: 1px dashed #aaa;
+        margin: 15px 0;
+    }
+
+    .skills-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .skills-list li {
+        margin-bottom: 5px;
+        font-size: 1em;
+        color: #555;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas> <!-- Canvas onde o jogo será desenhado -->
+  
+  <!-- Overlay de Game Over -->
+  <div id="overlay">
+    <h1 id="overlayTitle">Game Over</h1> <!-- Título do overlay -->
+    <div id="overlayScore">Pontos: 0</div> <!-- Mostra pontuação -->
+    <button id="btnRestart">Reiniciar</button> <!-- Botão para reiniciar -->
+  </div>
+
+  <div class="overlay" id="power-up-overlay">
+      <div class="container">
+          <div class="main-content">
+              <div class="header">
+                  <h1>Escolha um novo poder</h1>
+                  <span class="level">level 99</span>
+              </div>
+
+              <div class="card-selection">
+                  <div class="card">
+                      <div class="card-title">carta 1</div>
+                      <div class="card-description">Descricao dos poderes da carta</div>
+                  </div>
+                  <div class="card">
+                      <div class="card-title">carta 1</div>
+                      <div class="card-description">Descricao dos poderes da carta</div>
+                  </div>
+                  <div class="card">
+                      <div class="card-title">carta 1</div>
+                      <div class="card-description">Descricao dos poderes da carta</div>
+                  </div>
+              </div>
+
+              <div class="cancel-button-wrapper">
+                  <button class="cancel-level-button">cancelar nivel</button>
+              </div>
+          </div>
+
+          <div class="status-panel">
+              <h2>status</h2>
+              <div class="status-item">vida: <strong>75</strong></div>
+              <div class="status-item">velocidade: <strong>23</strong></div>
+              <div class="status-item">forca: <strong>123</strong></div>
+              <div class="status-item">velocidade dos inimigos: <strong>13</strong></div>
+              <div class="status-item">tamanho: <strong>23</strong></div>
+              <div class="status-item">tamanho bala: <strong>12</strong></div>
+              <div class="status-item">dano da bala: <strong>5</strong></div>
+
+              <div class="separator"></div>
+
+              <ul class="skills-list">
+                  <li>habilidade 1</li>
+                  <li>habilidade 2</li>
+                  <li>habilidade 3</li>
+                  <li>habilidade 4</li>
+                  <li>habilidade 5</li>
+                  <li>habilidade 6</li>
+                  <li>habilidade 7</li>
+              </ul>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    // --- CONFIGURAÇÕES ---
+    const OBJECT_TYPES = [  
+      { id: 'b1', src: 'akaza.png',   dangerous: true, points: 1, prob: 0.2, life: 5}, // Objeto perigoso comum
+      { id: 'b2', src: 'akaza.png', dangerous: true, points: 3, prob: 0.2, life: 10}, // Objeto perigoso comum
+      { id: 'b3', src: 'akaza.png',     dangerous: true, points: 5, prob: 0.2, life: 15}, // Objeto perigoso comum
+      { id: 'b4', src: 'akaza.png', dangerous: true, points: 7, prob: 0.1, life: 20}, // Objeto perigoso comum
+      { id: 'b5', src: 'muzan.png',     dangerous: true, points: 10, prob: 0.1, life: 30}, // Objeto perigoso comum
+    ];
+
+    const CARTAS = [
+      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
+      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
+      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
+      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
+    ]
+    // Carregar imagens
+    const images = {}; // Objeto para armazenar imagens dos objetos
+    OBJECT_TYPES.forEach(t => { 
+      const img = new Image(); // cria nova imagem
+      img.src = t.src;          // define caminho da imagem
+      images[t.id] = img;       // armazena na coleção de imagens com a id do objeto
+    });
+
+    const bgImg = new Image(); bgImg.src = 'bg.png'; // imagem de fundo
+    const playerImg = new Image(); playerImg.src = 'yoriichi.png'; // imagem do jogador
+    const bulletImg = new Image(); bulletImg.src = 'sun.png'; // imagem da bala
+    const shootSound = new Audio('tiro.mp3'); //a rquivo do tiro
+
+    // Canvas full screen
+    const canvas = document.getElementById('gameCanvas'); // pega o elemento canvas
+    const ctx = canvas.getContext('2d'); // contexto 2D para desenhar
+    function resize() { 
+      canvas.width = window.innerWidth; // largura total da tela
+      canvas.height = window.innerHeight; // altura total da tela
+    }
+    window.addEventListener('resize', resize); // ajusta tamanho do canvas ao redimensionar janela
+    resize(); // chama resize inicialmente
+
+
+
+
+
+
+    // Estado do jogo
+    let player = { x: canvas.width/2 - 30, y: canvas.height/2 - 30, width: 80, height: 60, speed: 10 }; // posição, tamanho e velocidade do jogador
+    let bullets = []; // array para armazenar balas
+    let objects = []; // array para armazenar objetos que caem
+    let nextLevel = 50;
+    let score = 0; // pontuação inicial
+    let lives = 100; // vidas iniciais
+    let gameSpeed = 2; // velocidade base de queda dos objetos
+    let spawnInterval = 500; // intervalo de spawn em ms
+    let lastSpawn = 0; // timestamp do último spawn
+    let lastTime = 0; // timestamp do último frame
+    let running = true; // flag para saber se o jogo está rodando
+    let bulletDamage = 5;
+    const explosionParticles = [];
+
+    // Overlay
+    const overlay = document.getElementById('overlay'); // overlay de Game Over
+    const overlayTitle = document.getElementById('overlayTitle'); // título do overlay
+    const overlayScore = document.getElementById('overlayScore'); // pontuação do overlay
+    document.getElementById('btnRestart').addEventListener('click', restartGame); // botão reiniciar chama função restartGame
+
+    // Controles do jogador
+    const keys = {}; // objeto para armazenar teclas pressionadas
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true; // seta tecla como pressionada
+      if (e.key === ' ' || e.code === 'Space') { // se espaço
+        shoot(); // chama função de tiro
+        e.preventDefault(); // evita scroll da página
+      }
+    });
+    window.addEventListener('keyup', e => { keys[e.key] = false; }); // tecla solta
+
+
+
+    // Encontrar o inimigo mais próximo
+    function findClosestEnemy() {
+      if (objects.length === 0) return null;
+      
+      let closest = null;
+      let minDistance = Infinity;
+      
+      for (const obj of objects) {
+        if (!obj.dangerous) continue; // Só considerar inimigos perigosos
+        
+        const dx = (obj.x + obj.width/2) - (player.x + player.width/2);
+        const dy = (obj.y + obj.height/2) - (player.y + player.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closest = obj;
+        }
+      }
+      
+      return closest;
+    }
+    
+    // Escolher tipo de objeto baseado na probabilidade
+    function chooseType() {
+      const r = Math.random(); // número aleatório entre 0 e 1
+      let acc = 0;
+      for (const t of OBJECT_TYPES) {
+        acc += t.prob; // acumula probabilidade
+        if (r <= acc) return t; // retorna objeto quando alcança intervalo
+      }
+      return OBJECT_TYPES[0]; // fallback
+    }
+
+    // Spawn de objetos
+    function spawnObject() {
+      shoot()
+      const t = chooseType();
+      const size = 70;
+      // Escolhe uma borda aleatória para spawnar
+      const side = Math.floor(Math.random() * 4); // 0: topo, 1: direita, 2: baixo, 3: esquerda
+      let x, y;
+      
+      switch(side) {
+        case 0: // Topo
+          x = Math.random() * (canvas.width - size);
+          y = -size;
+          break;
+        case 1: // Direita
+          x = canvas.width;
+          y = Math.random() * (canvas.height - size);
+          break;
+        case 2: // Baixo
+          x = Math.random() * (canvas.width - size);
+          y = canvas.height;
+          break;
+        case 3: // Esquerda
+          x = -size;
+          y = Math.random() * (canvas.height - size);
+          break;
+      }
+      
+      objects.push({ 
+        type: t.id, x, y, width: size, height: size, img: images[t.id], dangerous: t.dangerous, points: t.points, life: t.life 
+      });
+    }
+
+
+    
+    // Atirar
+    function shoot() {
+      //shootSound.currentTime = 0; // reinicia o som caso ele ainda esteja tocando
+      //shootSound.play();           // toca o som
+
+      const closestEnemy = findClosestEnemy();
+      let dirX, dirY;
+      
+      if (closestEnemy) {
+        // Calcular direção para o inimigo mais próximo
+        const dx = (closestEnemy.x + closestEnemy.width/2) - (player.x + player.width/2);
+        const dy = (closestEnemy.y + closestEnemy.height/2) - (player.y + player.height/2);
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Normalizar o vetor de direção
+        dirX = dx / distance;
+        dirY = dy / distance;
+      } else {
+        // Se não há inimigos, atirar para a direita
+        dirX = 1;
+        dirY = 0;
+      }
+      
+      // Velocidade base da bala
+      const bulletSpeed = 12;
+      
+      bullets.push({ 
+        x: player.x + player.width/2 - 8, // Centralizado no jogador
+        y: player.y + player.height/2 - 8,
+        width: 16,
+        height: 16,
+        speedX: dirX * bulletSpeed, // Velocidade na direção calculada
+        speedY: dirY * bulletSpeed
+      });
+      
+      // Ativar cooldown
+      lastShotTime = performance.now();
+    }
+
+
+    // Movimento jogador
+    function movePlayer() {
+      if ((keys['ArrowLeft'] || keys['a']) && player.x > 0) player.x -= player.speed; // esquerda
+      if ((keys['ArrowRight'] || keys['d']) && player.x < canvas.width - player.width) player.x += player.speed; // direita
+      if ((keys['ArrowUp'] || keys['w']) && player.y > 0) player.y -= player.speed; // cima
+      if ((keys['ArrowDown'] || keys['s']) && player.y < canvas.height - player.height) player.y += player.speed; // baixo
+    }
+
+    function createExplosion(x, y) {
+      // cria 20 partículas no ponto de impacto
+      for (let i = 0; i < 20; i++) {
+        explosionParticles.push({
+          x: x, // posição inicial X
+          y: y, // posição inicial Y
+          dx: (Math.random() - 0.5) * 8, // direção horizontal aleatória
+          dy: (Math.random() - 0.5) * 8, // direção vertical aleatória
+          radius: Math.random() * 4 + 2, // tamanho da partícula
+          color: `rgba(${200 + Math.random()*55}, ${50 + Math.random()*150}, 0, 1)`, // cor: vermelho/laranja/amarelo
+          alpha: 1 // opacidade inicial
+        });
+      }
+    }
+
+    // Atualizar objetos
+    function updateObjects(dt) {
+      for (let i = objects.length - 1; i >= 0; i--) {
+        const o = objects[i];
+        
+        // Calcula a direção para o jogador
+        const dx = player.x + player.width/2 - (o.x + o.width/2);
+        const dy = player.y + player.height/2 - (o.y + o.height/2);
+        
+        // Normaliza o vetor de direção
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const dirX = dx / distance;
+        const dirY = dy / distance;
+        
+        // Velocidade base + aumento gradual com pontuação
+        const speed = gameSpeed + dt * 0.15;
+        
+        // Move o inimigo na direção do jogador
+        o.x += dirX * speed;
+        o.y += dirY * speed;
+        
+        // Verifica colisão com o jogador
+        if (rectIntersect(o, player)) {
+          if (o.dangerous) {
+            lives -= 10;
+            objects.splice(i, 1);
+            if (lives <= 0) endGame();
+          } else {
+            score += o.points;
+            objects.splice(i, 1);
+          }
+          continue;
+        }
+        
+        // Remove objetos que saíram muito longe da tela
+        if (o.x < -100 || o.x > canvas.width + 100 || 
+            o.y < -100 || o.y > canvas.height + 100) {
+          objects.splice(i, 1);
+        }
+      }
+    }
+
+    // Atualizar balas (movimento horizontal)
+    function updateBullets() {
+      for (let i = bullets.length -1; i>=0; i--) {
+        const b = bullets[i];
+        b.x += b.speedX;
+        b.y += b.speedY;
+
+        // Remove bala se sair da tela
+        if (b.x < -50 || b.x > canvas.width + 50 || 
+            b.y < -50 || b.y > canvas.height + 50) {
+          bullets.splice(i,1);
+          continue;
+        }
+
+        // Verifica colisão com objetos
+        for (let j = objects.length -1; j>=0; j--) {
+          if (rectIntersect(b, objects[j])) {
+            score += objects[j].points || 50;
+            objects[j].life -= bulletDamage
+            if(objects[j].life <= 0){
+              createExplosion(objects[j].x, objects[j].y)
+              objects.splice(j,1);
+            }
+         
+            bullets.splice(i,1);
+            break;
+          }
+        }
+      }
+    }
+
+    // Colisão retangular
+    function rectIntersect(a,b) {
+      return !(a.x > b.x + b.width || a.x + a.width < b.x || a.y > b.y + b.height || a.y + a.height < b.y); 
+      // retorna true se dois retângulos se sobrepõem
+    }
+
+    // Desenhar cena
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height); // limpa canvas
+      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height); // desenha fundo
+      objects.forEach(o => ctx.drawImage(o.img, o.x, o.y, o.width, o.height)); // desenha objetos
+      bullets.forEach(b => ctx.drawImage(bulletImg, b.x, b.y, b.width, b.height)); // desenha balas
+      ctx.drawImage(playerImg, player.x, player.y, player.width, player.height); // desenha jogador
+
+      // HUD
+      const porcentagemVida = (lives / 100) * 100;
+      const barraLargura = 200;
+      const barraAltura = 20;
+      const barraX = canvas.width - barraLargura - 20;
+      const barraY = 10;
+
+      // Fundo da barra (vermelho)
+      ctx.fillStyle = '#d11313';
+      ctx.fillRect(barraX, barraY, barraLargura, barraAltura);
+
+      // Vida atual (verde)
+      ctx.fillStyle = 'green';
+      ctx.fillRect(barraX, barraY, (porcentagemVida / 100) * barraLargura, barraAltura);
+
+      // Borda da barra
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(barraX, barraY, barraLargura, barraAltura);
+    }
+
+    // Fim de jogo
+    function endGame() {
+      running = false; // para loop
+      overlayScore.textContent = 'Pontos: ' + score; // atualiza pontuação no overlay
+      overlayTitle.textContent = 'Game Over'; // atualiza título
+      overlay.classList.add('visible'); // mostra overlay
+    }
+
+    // Reiniciar jogo
+    function restartGame() {
+      objects = []; bullets = []; score = 0; lives = 100; gameSpeed = 2; running = true; 
+      overlay.classList.remove('visible'); // esconde overlay
+      lastSpawn = performance.now(); // reinicia spawn
+      lastTime = performance.now(); // reinicia loop
+      requestAnimationFrame(loop); // inicia loop novamente
+    }
+
+    function newLevel() {
+      running = false;
+      overlayLevel = document.getElementById("power-up-overlay");
+      overlayLevel.style.display = "flex";
+    }
+
+    
+    // Loop principal
+    function loop(timestamp) {
+      if (!lastTime) lastTime = timestamp;
+      const dt = timestamp - lastTime; // delta time
+      lastTime = timestamp;
+
+      if (running) {
+        if (timestamp - lastSpawn > spawnInterval) { spawnObject(); lastSpawn = timestamp; } // spawn objetos
+        movePlayer();    // atualiza posição do jogador
+        updateObjects(dt); // atualiza objetos
+        updateBullets();   // atualiza balas
+        draw();            // redesenha tudo
+        requestAnimationFrame(loop); // próximo frame
+
+        if(score >= nextLevel){
+          newLevel()
+          nextLevel = 2*score / 1,5
+          console.log(nextLevel)
+        }
+        console.log("rodando");
+      }
+    }
+
+    // Inicia jogo quando imagem de fundo carrega
+    bgImg.onload = () => { lastSpawn = performance.now(); lastTime = performance.now(); requestAnimationFrame(loop); };
+  </script>
+</body>
+</html>

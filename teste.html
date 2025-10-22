@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha um Novo Poder (Overlay)</title>
+    <style>
+        /* O Overlay que irá cobrir toda a tela */
+        .overlay {
+            /* Propriedades para cobrir toda a viewport */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            
+            /* Cor de fundo com transparência para o efeito de "fundo embaçado" */
+            background-color: rgba(0, 0, 0, 0.7); 
+            
+            /* Centraliza o conteúdo (o container) */
+            display: flex; /* Mudaremos para 'flex' no JS para mostrar */
+            justify-content: center;
+            align-items: center;
+            
+            /* Alto z-index para garantir que fique por cima de todo o conteúdo da página */
+            z-index: 1000;
+            
+            /* ******************************************************* */
+            /* ESTE É O CÓDIGO CRÍTICO PARA OCULTAR O OVERLAY INICIALMENTE */
+            display: none; 
+            /* Para mostrar, o JS mudaria para: element.style.display = 'flex'; */
+            /* ******************************************************* */
+
+            /* Apenas para demonstração, vou forçar a exibição. Remova a linha abaixo 
+               se for testar a parte de 'display: none;' */
+            /* display: flex;  */
+        }
+
+        /* Estilos do corpo da página (para ter algo "atrás" do overlay) */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        /* Estilos do Container (o conteúdo principal) */
+        .container {
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Sombra mais forte para destaque */
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+            /* Centralizado pelo overlay, não precisa de margins */
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2em;
+            color: #333;
+        }
+
+        .header .level {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .card-selection {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            border: 2px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            width: 200px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 15px;
+        }
+
+        .card-description {
+            font-size: 0.95em;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .cancel-button-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .cancel-level-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+        }
+
+        .cancel-level-button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .status-panel {
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f2f2f2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .status-panel h2 {
+            margin-top: 0;
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            margin-bottom: 8px;
+            font-size: 1.05em;
+            color: #444;
+        }
+
+        .status-item strong {
+            color: #222;
+        }
+
+        .separator {
+            border-top: 1px dashed #aaa;
+            margin: 15px 0;
+        }
+
+        .skills-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .skills-list li {
+            margin-bottom: 5px;
+            font-size: 1em;
+            color: #555;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 800px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                width: 95%;
+            }
+
+            .card-selection {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card {
+                width: 80%;
+                max-width: 300px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header .level {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="power-up-overlay">
+        <div class="container">
+            <div class="main-content">
+                <div class="header">
+                    <h1>Escolha um novo poder</h1>
+                    <span class="level">level 99</span>
+                </div>
+
+                <div class="card-selection">
+                    <div class="card">
+                        <div class="card-title">carta 1</div>
+                        <div class="card-description">Descricao dos poderes da carta</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">carta 1</div>
+                        <div class="card-description">Descricao dos poderes da carta</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">carta 1</div>
+                        <div class="card-description">Descricao dos poderes da carta</div>
+                    </div>
+                </div>
+
+                <div class="cancel-button-wrapper">
+                    <button class="cancel-level-button">cancelar nivel</button>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <h2>status</h2>
+                <div class="status-item">vida: <strong>75</strong></div>
+                <div class="status-item">velocidade: <strong>23</strong></div>
+                <div class="status-item">forca: <strong>123</strong></div>
+                <div class="status-item">velocidade dos inimigos: <strong>13</strong></div>
+                <div class="status-item">tamanho: <strong>23</strong></div>
+                <div class="status-item">tamanho bala: <strong>12</strong></div>
+                <div class="status-item">dano da bala: <strong>5</strong></div>
+
+                <div class="separator"></div>
+
+                <ul class="skills-list">
+                    <li>habilidade 1</li>
+                    <li>habilidade 2</li>
+                    <li>habilidade 3</li>
+                    <li>habilidade 4</li>
+                    <li>habilidade 5</li>
+                    <li>habilidade 6</li>
+                    <li>habilidade 7</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div style="padding: 50px; text-align: center;">
+        <h2>Conteúdo de Fundo da Página</h2>
+        <p>Este texto está aqui para que você veja o fundo escurecido pelo overlay.</p>
+        <p>Use JavaScript para mudar o estilo do elemento com id="power-up-overlay".</p>
+        
+        <button onclick="document.getElementById('power-up-overlay').style.display = 'flex';">
+            Mostrar Overlay
+        </button>
+        <button onclick="document.getElementById('power-up-overlay').style.display = 'none';">
+            Ocultar Overlay
+        </button>
+    </div>
+</body>
+</html>

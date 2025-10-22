@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!-- Declara o tipo do documento como HTML5 -->
+<html lang="pt-BR">
+<!-- Abre o elemento root do HTML e define idioma como português do Brasil -->
+<head>
+  <!-- Início do head (metadados) -->
+  <meta charset="UTF-8">
+  <!-- Define a codificação de caracteres para UTF-8 -->
+  <title>Exercício de Partículas</title>
+  <!-- Título da página (aparece na aba do navegador) -->
+  <style>
+    /* Estilo interno: define aparência da página e do canvas */
+    html, body { height: 100%; margin: 0; background: #111; overflow: hidden; }
+    /* Faz o body ocupar toda a altura, remove margens, fundo escuro e evita scroll */
+    canvas { display: block; margin: auto; background: #222; }
+    /* Centraliza o canvas e define cor de fundo para ele */
+    h2 { color: white; text-align: center; font-family: Arial; }
+    /* Estiliza o título (cor, alinhamento e fonte) */
+  </style>
+  <!-- Fim do bloco de estilos -->
+</head>
+<body>
+  <!-- Corpo da página (conteúdo visível) -->
+  <h2>💨 Sistema de Partículas — Fumaça no Deserto</h2>
+  <!-- Título explicativo para a atividade -->
+  <canvas id="canvas"></canvas>
+  <!-- Elemento canvas onde desenharemos as partículas -->
+
+  <script>
+    // Início do script JavaScript
+
+    const canvas = document.getElementById("canvas");
+    // Pega a referência do elemento <canvas> pelo id
+
+    const ctx = canvas.getContext("2d");
+    // Obtém o contexto 2D para desenhar (API do canvas)
+
+    canvas.width = window.innerWidth;
+    // Ajusta a largura do canvas para a largura da janela do navegador
+
+    canvas.height = window.innerHeight;
+    // Ajusta a altura do canvas para a altura da janela do navegador
+
+    const smokeParticles = [];
+    // Array que guarda todas as partículas ativas (cada partícula é um objeto)
+
+    // Cria novas partículas a cada clique
+    canvas.addEventListener("click", e => {
+      // Ao clicar no canvas, executa esta função passando o evento 'e'
+      for (let i = 0; i < 20; i++) {
+        // Cria 20 partículas por clique (pode ajustar esse número)
+        smokeParticles.push({
+          x: e.clientX,
+          // posição X inicial: posição do clique (coordenada do mouse)
+          y: e.clientY,
+          // posição Y inicial: posição do clique
+          radius: Math.random() * 4 + 3,
+          // raio/tamanho inicial: valor aleatório entre 3 e 7
+          alpha: Math.random() * 0.5 + 0.5,
+          // transparência inicial: aleatório entre 0.5 e 1.0
+          dx: (Math.random() * 2 - 1),
+          // velocidade horizontal: aleatória entre -1 e +1 (dispersão lateral)
+          dy: Math.random() * 1 + 0.5
+          // velocidade vertical: aleatória entre 0.5 e 1.5 (movimenta pra baixo/para cima conforme coordenadas)
+        });
+      }
+    });
+
+    // Atualiza e desenha as partículas
+    function animate() {
+      // Função chamada em loop (requestAnimationFrame) para animar as partículas
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.2)"; // cria efeito de rastro
+      // Preenche o canvas com um retângulo sem apagar totalmente, gerando "rastro" (motion blur)
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Desenha o retângulo cobrindo todo o canvas
+
+      for (let i = 0; i < smokeParticles.length; i++) {
+        // Percorre todas as partículas existentes
+        const p = smokeParticles[i];
+        // 'p' é a partícula atual (encurtamento da referência)
+
+        p.x += p.dx;
+        // Atualiza a posição X com a velocidade horizontal
+
+        p.y += p.dy;
+        // Atualiza a posição Y com a velocidade vertical
+
+        p.alpha -= 0.01;
+        // Diminui gradualmente a opacidade (fade out). Ajustar esse valor altera duração.
+
+        p.radius += 0.05;
+        // Aumenta levemente o raio com o tempo (partículas "incham")
+
+        if (p.alpha <= 0) {
+          // Se a partícula ficou totalmente transparente:
+          smokeParticles.splice(i, 1);
+          // Remove a partícula do array para liberar memória e evitar processamento desnecessário
+          i--;
+          // Ajusta o índice porque removemos um elemento do array
+          continue;
+          // Pula para a próxima iteração
+        }
+
+        // mistura de marrom, branco e preto (poeira)
+        ctx.beginPath();
+        // Inicia um novo caminho de desenho no canvas
+
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        // Desenha um círculo na posição (p.x,p.y) com raio p.radius
+
+        const r = 100 + Math.random() * 60;
+        // Gera componente vermelho entre 100 e 160 (variação para deixar cor orgânica)
+
+        const g = 80 + Math.random() * 40;
+        // Gera componente verde entre 80 e 120
+
+        const b = 50 + Math.random() * 30;
+        // Gera componente azul entre 50 e 80
+
+        ctx.fillStyle = `rgba(${r},${g},${b},${p.alpha})`;
+        // Define a cor de preenchimento usando r,g,b e alpha (transparência da partícula)
+
+        ctx.fill();
+        // Preenche o círculo desenhado (a partícula aparece na tela)
+      }
+
+      requestAnimationFrame(animate);
+      // Pede ao navegador para chamar 'animate' no próximo frame (loop contínuo)
+    }
+
+    animate();
+    // Inicia a animação chamando a função pela primeira vez
+
+  </script>
+  <!-- Fim do script -->
+</body>
+</html>

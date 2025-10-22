@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercício: Explosões</title>
+  <style>
+    html, body { height: 100%; margin: 0; overflow: hidden; background: #222; }
+    canvas { display: block; margin: auto; background: #333; }
+    h2 { color: white; text-align: center; font-family: Arial; }
+  </style>
+</head>
+<body>
+  <h2>💥 Explosão de Partículas</h2>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Estado do "jogador" e da "bala"
+    const player = { x: canvas.width/2 - 25, y: canvas.height - 100, width: 50, height: 50, speed: 6 };
+    const bullets = [];
+    const obstacles = [{ x: canvas.width/2 - 30, y: 100, width: 60, height: 60 }]; // obstáculo fixo
+    const explosionParticles = []; // array que guardará as partículas da explosão
+
+    const keys = {};
+    window.addEventListener("keydown", e => {
+      keys[e.key] = true;
+      if (e.key === ' ' || e.code === 'Space') shoot(); // espaço dispara bala
+    });
+    window.addEventListener("keyup", e => { keys[e.key] = false; });
+
+    // --- FUNÇÃO PARA DISPARO ---
+    function shoot() {
+      bullets.push({
+        x: player.x + player.width/2 - 5,
+        y: player.y,
+        width: 10,
+        height: 20,
+        speedY: -10
+      });
+    }
+
+    // --- FUNÇÃO DE CRIAÇÃO DE EXPLOSÃO ---
+    function createExplosion(x, y) {
+      // cria 20 partículas no ponto de impacto
+      for (let i = 0; i < 20; i++) {
+        explosionParticles.push({
+          x: x, // posição inicial X
+          y: y, // posição inicial Y
+          dx: (Math.random() - 0.5) * 8, // direção horizontal aleatória
+          dy: (Math.random() - 0.5) * 8, // direção vertical aleatória
+          radius: Math.random() * 4 + 2, // tamanho da partícula
+          color: `rgba(${200 + Math.random()*55}, ${50 + Math.random()*150}, 0, 1)`, // cor: vermelho/laranja/amarelo
+          alpha: 1 // opacidade inicial
+        });
+      }
+    }
+
+    // --- ATUALIZAÇÃO DAS BALAS ---
+    function updateBullets() {
+      for (let i = bullets.length -1; i >= 0; i--) {
+        const b = bullets[i];
+        b.y += b.speedY;
+
+        // remove bala se sair da tela
+        if (b.y < 0) { bullets.splice(i,1); continue; }
+
+        // checa colisão com obstáculos
+        for (let j = obstacles.length -1; j >=0; j--) {
+          const o = obstacles[j];
+          if (rectIntersect(b, o)) {
+            createExplosion(b.x + b.width/2, b.y + b.height/2); // cria explosão no ponto de impacto
+            bullets.splice(i,1); // remove bala
+            break;
+          }
+        }
+      }
+    }
+
+    // --- ATUALIZAÇÃO DAS PARTÍCULAS DE EXPLOSÃO ---
+    function updateExplosions() {
+      for (let i = explosionParticles.length -1; i >=0; i--) {
+        const p = explosionParticles[i];
+        p.x += p.dx; // move horizontal
+        p.y += p.dy; // move vertical
+        p.alpha -= 0.05; // diminui opacidade
+        if (p.alpha <= 0) {
+          explosionParticles.splice(i,1); // remove partículas invisíveis
+        }
+      }
+    }
+
+    // --- FUNÇÃO DE DESENHO ---
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // desenha obstáculo
+      ctx.fillStyle = "gray";
+      obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
+
+      // desenha jogador
+      ctx.fillStyle = "red";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // desenha balas
+      ctx.fillStyle = "yellow";
+      bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
+
+      // desenha partículas da explosão
+      explosionParticles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(${Math.floor(200 + Math.random()*55)}, ${Math.floor(50 + Math.random()*150)}, 0, ${p.alpha})`;
+        ctx.fill();
+      });
+    }
+
+    // --- FUNÇÃO DE MOVIMENTO DO JOGADOR ---
+    function movePlayer() {
+      if (keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+      if (keys['ArrowRight'] && player.x < canvas.width - player.width) player.x += player.speed;
+      if (keys['ArrowUp'] && player.y > 0) player.y -= player.speed;
+      if (keys['ArrowDown'] && player.y < canvas.height - player.height) player.y += player.speed;
+    }
+
+    // --- FUNÇÃO DE COLISÃO RETÂNGULO ---
+    function rectIntersect(a,b) {
+      return !(a.x > b.x + b.width || a.x + a.width < b.x || a.y > b.y + b.height || a.y + a.height < b.y);
+    }
+
+    // --- LOOP PRINCIPAL ---
+    function loop() {
+      movePlayer();
+      updateBullets();
+      updateExplosions();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
