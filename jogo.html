@@ -4,6 +4,7 @@
   <meta charset="UTF-8"> <!-- Define codificação para UTF-8 -->
   <title>Sun Slayer</title> <!-- Título da aba do navegador -->
   <meta name="viewport" content="width=device-width,initial-scale=1"> <!-- Responsivo para dispositivos móveis -->
+
   <style>
     html, body { height: 100%; margin: 0; } /* Ocupa toda a tela e remove margens padrão */
     body { background: #000; display:flex; align-items:center; justify-content:center; } /* Fundo preto e centraliza conteúdo */
@@ -34,7 +35,6 @@
       z-index: 1000;
       display: none; 
     }
-
     .container {
         border: 2px solid #333;
         border-radius: 10px;
@@ -42,7 +42,7 @@
         background-color: #fff;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         display: grid;
-        grid-template-columns: 2fr 1fr; /* Two columns: one for choices, one for status */
+        grid-template-columns: 2fr 1fr; 
         gap: 20px;
         width: 90%;
         max-width: 1200px;
@@ -77,7 +77,7 @@
       display: flex;
       justify-content: space-around;
       gap: 20px;
-      flex-wrap: wrap; /* Allow cards to wrap on smaller screens */
+      flex-wrap: wrap; 
     }
 
     .card {
@@ -226,25 +226,14 @@
 
           <div class="status-panel">
               <h2>status</h2>
-              <div class="status-item">vida: <strong>75</strong></div>
-              <div class="status-item">velocidade: <strong>23</strong></div>
-              <div class="status-item">forca: <strong>123</strong></div>
-              <div class="status-item">velocidade dos inimigos: <strong>13</strong></div>
-              <div class="status-item">tamanho: <strong>23</strong></div>
-              <div class="status-item">tamanho bala: <strong>12</strong></div>
-              <div class="status-item">dano da bala: <strong>5</strong></div>
+              <div class="status-item">Vida atual: <strong></strong></div>
+              <div class="status-item">Vida maxima: <strong></strong></div>
+              <div class="status-item">Velocidade do jogador: <strong></strong></div>
+              <div class="status-item">Velocidade dos inimigos: <strong></strong></div>
+              <div class="status-item">Tamanho do jogador: <strong></strong></div>
+              <div class="status-item">Tamanho dos inimigos: <strong></strong></div>
+              <div class="status-item">dano da bala: <strong></strong></div>
 
-              <div class="separator"></div>
-
-              <ul class="skills-list">
-                  <li>habilidade 1</li>
-                  <li>habilidade 2</li>
-                  <li>habilidade 3</li>
-                  <li>habilidade 4</li>
-                  <li>habilidade 5</li>
-                  <li>habilidade 6</li>
-                  <li>habilidade 7</li>
-              </ul>
           </div>
       </div>
   </div>
@@ -252,19 +241,14 @@
   <script>
     // --- CONFIGURAÇÕES ---
     const OBJECT_TYPES = [  
-      { id: 'b1', src: 'Gyotaro.png',   dangerous: true, points: 1, prob: 0.2, life: 5}, // Objeto perigoso comum
-      { id: 'b2', src: 'zohakuten.png', dangerous: true, points: 3, prob: 0.2, life: 10}, // Objeto perigoso comum
-      { id: 'b3', src: 'akaza.png',     dangerous: true, points: 5, prob: 0.2, life: 15}, // Objeto perigoso comum
-      { id: 'b4', src: 'Kokoshibu.png', dangerous: true, points: 7, prob: 0.1, life: 20}, // Objeto perigoso comum
-      { id: 'b5', src: 'muzan.png',     dangerous: true, points: 10, prob: 0.1, life: 30}, // Objeto perigoso comum
+      { id: 'b1', src: 'personagens/Gyotaro.png',   dangerous: true, points: 1, prob: 0.2, life: 5}, // Objeto perigoso comum
+      { id: 'b2', src: 'personagens/zohakuten.png', dangerous: true, points: 3, prob: 0.2, life: 10}, // Objeto perigoso comum
+      { id: 'b3', src: 'personagens/akaza.png',     dangerous: true, points: 5, prob: 0.2, life: 15}, // Objeto perigoso comum
+      { id: 'b4', src: 'personagens/Kokoshibu.png', dangerous: true, points: 7, prob: 0.1, life: 20}, // Objeto perigoso comum
+      { id: 'b5', src: 'personagens/muzan.png',     dangerous: true, points: 10, prob: 0.1, life: 30}, // Objeto perigoso comum
     ];
 
-    const CARTAS = [
-      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
-      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
-      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
-      {nome: 'armagedon', descricao: "detroi todos os inimigos", src: "armagedon.png", function: NaN},
-    ]
+
     // Carregar imagens
     const images = {}; // Objeto para armazenar imagens dos objetos
     OBJECT_TYPES.forEach(t => { 
@@ -274,8 +258,9 @@
     });
 
     const bgImg = new Image(); bgImg.src = 'bg.png'; // imagem de fundo
-    const playerImg = new Image(); playerImg.src = 'yoriichi.png'; // imagem do jogador
+    const playerImg = new Image(); playerImg.src = 'personagens/yoriichi.png'; // imagem do jogador
     const bulletImg = new Image(); bulletImg.src = 'sun.png'; // imagem da bala
+    
     const shootSound = new Audio('tiro.mp3'); //a rquivo do tiro
 
     // Canvas full screen
@@ -298,6 +283,7 @@
     let bullets = []; // array para armazenar balas
     let objects = []; // array para armazenar objetos que caem
     let nextLevel = 50;
+    let level = 0;
     let score = 0; // pontuação inicial
     let lives = 100; // vidas iniciais
     let gameSpeed = 2; // velocidade base de queda dos objetos
@@ -306,7 +292,6 @@
     let lastTime = 0; // timestamp do último frame
     let running = true; // flag para saber se o jogo está rodando
     let bulletDamage = 5;
-    const explosionParticles = [];
 
     // Overlay
     const overlay = document.getElementById('overlay'); // overlay de Game Over
@@ -325,6 +310,107 @@
     });
     window.addEventListener('keyup', e => { keys[e.key] = false; }); // tecla solta
 
+    
+
+
+
+    //logica das cartas
+    const cards = [
+      {
+        name: "Bônus de Vida",
+        image: "cartas/bonus_vida.png",
+        description: "Aumenta permanentemente sua vida máxima em 25 pontos.",
+        effect: "increase_max_health",
+      },
+      {
+        name: "Escudo Mágico",
+        image: "cartas/escudo.png",
+        description: "Concede um escudo que absorve o próximo golpe recebido.",
+        effect: "grant_shield"
+      },
+      {
+        name: "Ladrão de Velocidade",
+        image: "cartas/ladrao.png",
+        description: "Aumenta sua velocidade em 5 e diminui a velocidade dos inimigos em 3.",
+        effect: "speed_steal"
+      },
+      {
+        name: "Força Bruta",
+        image: "cartas/forca.png",
+        description: "Aumenta sua Força em 15.",
+        effect: "increase_strength",
+        value: 15
+      },
+      {
+        name: "Projéteis Maiores",
+        image: "cartas/tamanho_bala.png",
+        description: "Aumenta o tamanho da sua bala em 50%.",
+        effect: "increase_bullet_size",
+        value: 0.5 // Exemplo: 50%
+      },
+      {
+        name: "Dano Aprimorado",
+        image: "cartas/dano_bala.png",
+        description: "Aumenta o dano da sua bala em 5.",
+        effect: "increase_bullet_damage",
+        value: 5
+      },
+    ]; 
+    //funcoes das cartas
+    function addLife() {
+      const values = [10, 20, 30, 40, 50];
+      const newLife = Math.floor(Math.random() * values.length);
+
+      lives += newLife;
+      console.log('Vida adicionada: ' + newLife);
+    }
+
+
+
+    // Escolher tipo de objeto baseado na probabilidade
+    function chooseType() {
+      const r = Math.random(); // número aleatório entre 0 e 1
+      let acc = 0;
+      for (const t of OBJECT_TYPES) {
+        acc += t.prob; // acumula probabilidade
+        if (r <= acc) return t; // retorna objeto quando alcança intervalo
+      }
+      return OBJECT_TYPES[0]; // fallback
+    }
+
+    // Spawn de objetos
+    
+    let enemySize = 70;
+    function spawnObject() {
+      shoot()
+      const t = chooseType();
+      // Escolhe uma borda aleatória para spawnar
+      const side = Math.floor(Math.random() * 4); // 0: topo, 1: direita, 2: baixo, 3: esquerda
+      let x, y;
+      
+      switch(side) {
+        case 0: // Topo
+          x = Math.random() * (canvas.width - enemySize);
+          y = -enemySize;
+          break;
+        case 1: // Direita
+          x = canvas.width;
+          y = Math.random() * (canvas.height - enemySize);
+          break;
+        case 2: // Baixo
+          x = Math.random() * (canvas.width - enemySize);
+          y = canvas.height;
+          break;
+        case 3: // Esquerda
+          x = -enemySize;
+          y = Math.random() * (canvas.height - enemySize);
+          break;
+      }
+      
+      objects.push({ 
+        type: t.id, x, y, width: enemySize, height: enemySize, img: images[t.id], dangerous: t.dangerous, points: t.points, life: t.life 
+      });
+    }
 
 
     // Encontrar o inimigo mais próximo
@@ -350,51 +436,6 @@
       return closest;
     }
     
-    // Escolher tipo de objeto baseado na probabilidade
-    function chooseType() {
-      const r = Math.random(); // número aleatório entre 0 e 1
-      let acc = 0;
-      for (const t of OBJECT_TYPES) {
-        acc += t.prob; // acumula probabilidade
-        if (r <= acc) return t; // retorna objeto quando alcança intervalo
-      }
-      return OBJECT_TYPES[0]; // fallback
-    }
-
-    // Spawn de objetos
-    function spawnObject() {
-      shoot()
-      const t = chooseType();
-      const size = 70;
-      // Escolhe uma borda aleatória para spawnar
-      const side = Math.floor(Math.random() * 4); // 0: topo, 1: direita, 2: baixo, 3: esquerda
-      let x, y;
-      
-      switch(side) {
-        case 0: // Topo
-          x = Math.random() * (canvas.width - size);
-          y = -size;
-          break;
-        case 1: // Direita
-          x = canvas.width;
-          y = Math.random() * (canvas.height - size);
-          break;
-        case 2: // Baixo
-          x = Math.random() * (canvas.width - size);
-          y = canvas.height;
-          break;
-        case 3: // Esquerda
-          x = -size;
-          y = Math.random() * (canvas.height - size);
-          break;
-      }
-      
-      objects.push({ 
-        type: t.id, x, y, width: size, height: size, img: images[t.id], dangerous: t.dangerous, points: t.points, life: t.life 
-      });
-    }
-
-
     
     // Atirar
     function shoot() {
@@ -444,20 +485,7 @@
       if ((keys['ArrowDown'] || keys['s']) && player.y < canvas.height - player.height) player.y += player.speed; // baixo
     }
 
-    function createExplosion(x, y) {
-      // cria 20 partículas no ponto de impacto
-      for (let i = 0; i < 20; i++) {
-        explosionParticles.push({
-          x: x, // posição inicial X
-          y: y, // posição inicial Y
-          dx: (Math.random() - 0.5) * 8, // direção horizontal aleatória
-          dy: (Math.random() - 0.5) * 8, // direção vertical aleatória
-          radius: Math.random() * 4 + 2, // tamanho da partícula
-          color: `rgba(${200 + Math.random()*55}, ${50 + Math.random()*150}, 0, 1)`, // cor: vermelho/laranja/amarelo
-          alpha: 1 // opacidade inicial
-        });
-      }
-    }
+  
 
     // Atualizar objetos
     function updateObjects(dt) {
@@ -521,7 +549,6 @@
             score += objects[j].points || 50;
             objects[j].life -= bulletDamage
             if(objects[j].life <= 0){
-              createExplosion(objects[j].x, objects[j].y)
               objects.splice(j,1);
             }
          
@@ -532,11 +559,13 @@
       }
     }
 
+
     // Colisão retangular
     function rectIntersect(a,b) {
       return !(a.x > b.x + b.width || a.x + a.width < b.x || a.y > b.y + b.height || a.y + a.height < b.y); 
       // retorna true se dois retângulos se sobrepõem
     }
+
 
     // Desenhar cena
     function draw() {
@@ -584,10 +613,77 @@
       requestAnimationFrame(loop); // inicia loop novamente
     }
 
-    function newLevel() {
-      running = false;
+
+    let currentSelectedCards = [];
+    function levelUp() {
+      running = false;  
+
+      document.querySelector('.level').innerHTML = `Nivel ${level}`;
+
+      const statusValues = [
+          lives,
+          'WIP',
+          player.speed,
+          gameSpeed, 
+          tamanho = `${player.width} - ${player.height}`, 
+          enemySize,
+          spawnInterval, 
+          bulletDamage
+      ];
+      
+      // Iterar sobre os elementos status-item
+      const statusItems = document.querySelectorAll('.status-panel .status-item strong');
+      statusItems.forEach((strongElement, index) => {
+          if (statusValues[index] !== undefined) {
+              strongElement.innerHTML = statusValues[index];
+          }
+      });
+
+      
+      // 2. **Selecionar 3 Cartas Aleatórias e Únicas**
+      const availableIndices = Array.from({length: cards.length}, (_, i) => i);
+      currentSelectedCards = []; // Limpa a seleção anterior
+
+      while (currentSelectedCards.length < 3 && availableIndices.length > 0) {
+          const randomIndex = Math.floor(Math.random() * availableIndices.length);
+          const cardIndex = availableIndices[randomIndex];
+          
+          currentSelectedCards.push(cards[cardIndex]);
+          availableIndices.splice(randomIndex, 1);
+      }
+      
+      
+      // 3. **Gerar o HTML das Cartas Usando map() e Template Literals**
+      const cardsHTML = currentSelectedCards.map((card, index) => {
+          return `
+              <div class="card" onclick="selectCard(${index})"> 
+                  <div class="card-title">${card.name}</div>
+                  <div class="card-image"><img src="${card.image}"></div>
+                  <div class="card-description">${card.description}</div>
+              </div>
+          `;
+      }).join('');
+      // 4. **Injetar o HTML das Cartas de uma única vez**
+      const cardSelectionElement = document.querySelector('.card-selection');
+      cardSelectionElement.innerHTML = cardsHTML;
+      
       overlayLevel = document.getElementById("power-up-overlay");
       overlayLevel.style.display = "flex";
+    }
+
+
+    // Função de seleção de carta agora usa a variável global 'currentSelectedCards'
+    function selectCard(cardIndex) {
+        if (currentSelectedCards.length > cardIndex) {
+            const selectedCard = currentSelectedCards[cardIndex];
+            
+          //condicoes para efeito da carta escolhida
+        if(selectCard = "increase_max_health"){
+          addLife()
+        }
+            
+        backGame(); // Volta para o jogo após a seleção
+      }
     }
 
 
@@ -616,7 +712,8 @@
         requestAnimationFrame(loop); // próximo frame
 
         if(score >= nextLevel){
-          newLevel()
+          level ++;
+          levelUp()
           nextLevel = 2 * score / 1,5
         }
         console.log(running);
