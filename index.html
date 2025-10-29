@@ -79,21 +79,14 @@
         <button onclick="creditos()">Créditos</button>
     </div>
 
-    <!-- Música de fundo -->
     <audio id="musicaFundo" loop>
-        <source src="videoplayback.m4a" type="audio/mpeg">
+        <source src="sons/levelup.mp4" type="audio/mp4">
         Seu navegador não suporta o elemento de áudio.
     </audio>
-
     <script>
+
         const musica = document.getElementById('musicaFundo');
-
-        // Tenta iniciar a música automaticamente
-        musica.play().catch(e => {
-            console.log('Autoplay bloqueado, aguarde interação do usuário.');
-        });
-
-        // Reinicia a música a cada 3 minutos
+        
         const ciclo = 3 * 60 * 1000; // 3 minutos
         musica.addEventListener('playing', () => {
             setTimeout(() => {

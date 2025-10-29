@@ -339,31 +339,25 @@
         image: "cartas/forca.png",
         description: "Aumenta sua Força em 15.",
         effect: "increase_strength",
-        value: 15
       },
       {
         name: "Projéteis Maiores",
         image: "cartas/tamanho_bala.png",
         description: "Aumenta o tamanho da sua bala em 50%.",
         effect: "increase_bullet_size",
-        value: 0.5 // Exemplo: 50%
       },
       {
         name: "Dano Aprimorado",
         image: "cartas/dano_bala.png",
         description: "Aumenta o dano da sua bala em 5.",
         effect: "increase_bullet_damage",
-        value: 5
       },
     ]; 
     //funcoes das cartas
     function addLife() {
-      const values = [10, 20, 30, 40, 50];
-      const newLife = Math.floor(Math.random() * values.length);
-
-      lives += newLife;
-      console.log('Vida adicionada: ' + newLife);
+      lives += 50;
     }
+    
 
 
 
