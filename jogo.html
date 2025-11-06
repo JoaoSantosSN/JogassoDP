@@ -6,22 +6,38 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"> <!-- Responsivo para dispositivos móveis -->
 
   <style>
-    html, body { height: 100%; margin: 0; } /* Ocupa toda a tela e remove margens padrão */
-    body { background: #000; display:flex; align-items:center; justify-content:center; } /* Fundo preto e centraliza conteúdo */
-    canvas { display:block; } /* Canvas sem borda ou espaçamento extra */
+    html, body {
+      height: 100%; 
+      margin: 0; 
+    } /* Ocupa toda a tela e remove margens padrão */
+    body { 
+      background: #000; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+    } /* Fundo preto e centraliza conteúdo */
+    canvas { display:block; }
     
     /* Overlay para Game Over */
     #overlay {
-      position: fixed; top: 0; left: 0; right:0; bottom:0; /* cobre toda a tela */
-      display:flex; align-items:center; justify-content:center; /* centraliza conteúdo */
-      background: rgba(0,0,0,0.6); /* semi-transparente */
-      color: white; font-family: Arial, sans-serif; z-index: 10; /* estilo do texto e sobreposição */
-      visibility: hidden; /* inicialmente escondido */
-      flex-direction: column; gap: 12px; /* itens em coluna com espaçamento */
+      position: fixed; top: 0; left: 0; right:0; bottom:0;
+      display:flex; 
+      align-items:center; 
+      justify-content:center;
+      background: rgba(0,0,0,0.6);
+      color: white; font-family: Arial, sans-serif; z-index: 10;      
+      visibility: hidden;
+      flex-direction: column; gap: 12px;
     }
-    #overlay.visible { visibility: visible; } /* mostra overlay quando classe 'visible' é adicionada */
+    #overlay.visible {visibility: visible;}
 
-    button { padding: 10px 16px; font-size: 16px; border-radius:8px; border:none; cursor:pointer; } /* estilo do botão */
+    button { 
+      padding: 10px 16px; 
+      font-size: 16px; 
+      border-radius:8px; 
+      border:none; 
+      cursor:pointer; 
+    }
 
     .overlay {
       position: fixed;
@@ -227,11 +243,13 @@
               <h2>status</h2>
               <div class="status-item">Vida atual: <strong></strong></div>
               <div class="status-item">Vida maxima: <strong></strong></div>
+              <div class="status-item">Defesa: <strong></strong></div>
+              <div class="status-item">Velocidade da bala: <strong></strong></div>
+              <div class="status-item">Tamanho da bala: <strong></strong></div>
+              <div class="status-item">Dano da bala: <strong></strong></div>
               <div class="status-item">Velocidade do jogador: <strong></strong></div>
-              <div class="status-item">Velocidade dos inimigos: <strong></strong></div>
               <div class="status-item">Tamanho do jogador: <strong></strong></div>
               <div class="status-item">Tamanho dos inimigos: <strong></strong></div>
-              <div class="status-item">dano da bala: <strong></strong></div>
 
           </div>
       </div>
@@ -285,26 +303,35 @@
 
 
     // Estado do jogo
-    let playerSpeed = 10
-    let playerSize = 80
+    let playerSpeed = 5; // velocidade do jogador
+    let playerSize = 80; // tamanho do jogador
     let player = { x: canvas.width/2 - 30, y: canvas.height/2 - 30, width: playerSize, height: playerSize, speed: playerSpeed }; // posição, tamanho e velocidade do jogador
+    let barraX = player.x - 5; //posicao x da barra de vida
+    let barraY = player.y + 75; //posicao y da barra de vida
     let bullets = []; // array para armazenar balas
     let objects = []; // array para armazenar objetos que caem
     let nextLevel = 50; //indica o proximo nivel
     let level = 1; // nivel atual
     let score = 0; // pontuação inicial
-    let maxLives = 100; // vidas iniciais
+    let maxLives = 100; // maximo de vidas
     let lives = 100; // vidas iniciais
-    let gameSpeed = 3; // velocidade base de queda dos objetos
-    let spawnInterval = 550; // intervalo de spawn em ms
+    let gameSpeed = 2; // velocidade base de queda dos objetos
+    let spawnInterval = 500; // intervalo de spawn em ms
     let lastSpawn = 0; // timestamp do último spawn
     let lastTime = 0; // timestamp do último frame
     let running = true; // flag para saber se o jogo está rodando
     let playerDamage = 5; //dano do jogador
+    let bulletSpeed = 12; //velocidade da bala
+    let bulletSize = 15; //tamanho da bala
+    let enemySize = 70; //tamanho dos inimigos
+    
 
     //buffs
-    let autoShoot = false
-    let defense = 0
+    let autoShoot = false;
+    let defense = 0;
+
+    let field = false;
+    let help = 0;
 
     // Overlay
     const overlay = document.getElementById('overlay'); // overlay de Game Over
@@ -312,16 +339,20 @@
     const overlayScore = document.getElementById('overlayScore'); // pontuação do overlay
     document.getElementById('btnRestart').addEventListener('click', restartGame); // botão reiniciar chama função restartGame
 
-    // Controles do jogador
-    const keys = {}; // objeto para armazenar teclas pressionadas
-    window.addEventListener('keydown', e => {
-      keys[e.key] = true; // seta tecla como pressionada
-      if (e.key === ' ' || e.code === 'Space') { // se espaço
-        shoot(); // chama função de tiro
-        e.preventDefault(); // evita scroll da página
-      }
-    });
-    window.addEventListener('keyup', e => { keys[e.key] = false; }); // tecla solta
+    // Controles do tiro
+    let canShoot = true; // variavel pra permitir tiro
+    const COOLDOWN = 600; // delay pra 
+    if (canShoot) {
+      window.addEventListener('mousedown', e => {
+        keys[e.key] = true;
+        if (e.button === 0) { 
+          shoot(); // chama a funcao de tiro
+        }
+      });
+    }
+    setTimeout(() => {
+      canShoot = true;
+    }, COOLDOWN);
 
     
 
@@ -350,70 +381,41 @@
       {
         name: "Veloz",
         image: "cartas/velocidade.png",
-        description: "Almenta sua velocidade em 10%",
+        description: "Almenta sua velocidade em +5",
         effect: "increase_speed"
       },
       {
         name: "Escudo Mágico",
         image: "cartas/escudo.png",
-        description: "Diminui o dano recebido em 2 pontos",
+        description: "Diminui o dano recebido em -4",
         effect: "grant_shield"
       },
       {
         name: "Ladrão de Velocidade",
         image: "cartas/ladrao.png",
-        description: "Aumenta sua velocidade em 3 e diminui a dos inimigos em 3.",
+        description: "Aumenta sua velocidade em +3 e diminui a dos inimigos em -3.",
         effect: "speed_steal"
       },
       {
         name: "Força Bruta",
         image: "cartas/forca.png",
-        description: "Aumenta seu dano em +2",
+        description: "Aumenta seu dano em +5",
         effect: "increase_strength",
       },
       {
         name: "Projéteis Maiores",
         image: "cartas/bala.png",
-        description: "Aumenta o tamanho da sua bala em 5%.",
+        description: "Aumenta o tamanho da sua bala em +2px.",
         effect: "increase_bullet_size",
       },
       {
-        name: "Mira automatica",
-        image: "cartas/mira.png",
-        description: "Você pode atirar automaticamente!",
-        effect: "auto_shoot",
-      },
-      {
-        name: "Dano Aprimorado",
-        image: "cartas/dano_bala.png",
-        description: "Aumenta o dano da sua bala em 5.",
-        effect: "increase_bullet_damage",
-      },
+        name: "Tiro rapido",
+        image: "cartas/bala_rapida.png",
+        description: "Aumenta a velocidade da bala em +3.",
+        effect: "increase_bullet_speed",
+      }
     ]; 
-    //funcoes das cartas
-    function increase_health() {
-      let num = Math.floor(Math.random() * maxLives - (lives+20));
-      lives+=num;
-    }
-    
-    function increase_max_health() {
-      maxLives += 25
-    }
 
-    function grant_shield() {
-      defense += 2
-    }
-
-    function speed_steal() {
-      playerSpeed +=3
-      gameSpeed -= 0.3 
-    }
-    function increase_strength() {
-      playerDamage += 2
-    }
-    function decrease_size() {
-      playerSize -= 5;
-    }
 
 
     
@@ -434,8 +436,6 @@
   }
 
     // Spawn de objetos
-    
-    let enemySize = 70;
     function spawnObject() {
       //shoot() //remova esta chamada para tirar o tiro automatico
 
@@ -487,7 +487,6 @@
           closest = obj;
         }
       }
-      
       return closest;
     }
     
@@ -515,14 +514,12 @@
         dirY = 0;
       }
       
-      // Velocidade base da bala
-      const bulletSpeed = 12;
       
       bullets.push({ 
         x: player.x + player.width/2 - 8, // Centralizado no jogador
         y: player.y + player.height/2 - 8,
-        width: 16,
-        height: 16,
+        width: bulletSize,
+        height: bulletSize,
         speedX: dirX * bulletSpeed, // Velocidade na direção calculada
         speedY: dirY * bulletSpeed
       });
@@ -533,11 +530,28 @@
 
 
     // Movimento jogador
+    const keys = {} // dicionario pra guardar as teclas
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true; // seta tecla como pressionada
+    });
+    window.addEventListener('keyup', e => { keys[e.key] = false; }); 
     function movePlayer() {
-      if ((keys['ArrowLeft'] || keys['a']) && player.x > 0) player.x -= player.speed; // esquerda
-      if ((keys['ArrowRight'] || keys['d']) && player.x < canvas.width - player.width) player.x += player.speed; // direita
-      if ((keys['ArrowUp'] || keys['w']) && player.y > 0) player.y -= player.speed; // cima
-      if ((keys['ArrowDown'] || keys['s']) && player.y < canvas.height - player.height) player.y += player.speed; // baixo
+      if (keys['a'] && player.x > 0) {// esquerda
+          player.x -= player.speed;
+          barraX -= player.speed;
+      }
+      if (keys['d'] && player.x < canvas.width - player.width) {//direita
+          player.x += player.speed;
+          barraX += player.speed;
+      }
+      if (keys['w'] && player.y > 0) {//cima
+          player.y -= player.speed;
+          barraY -= player.speed;
+      }
+      if (keys['s'] && player.y < canvas.height - player.height) {//baixo
+          player.y += player.speed;
+          barraY += player.speed;
+      }
     }
 
   
@@ -606,7 +620,6 @@
             if(objects[j].life <= 0){
               objects.splice(j,1);
             }
-         
             bullets.splice(i,1);
             break;
           }
@@ -632,10 +645,8 @@
 
       // HUD
       const porcentagemVida = (lives / maxLives) * 100;
-      const barraLargura = 200;
-      const barraAltura = 20;
-      const barraX = canvas.width - barraLargura - 20;
-      const barraY = 10;
+      const barraLargura = 85;
+      const barraAltura = 9;
 
       // Fundo da barra (vermelho)
       ctx.fillStyle = '#d11313';
@@ -647,7 +658,7 @@
 
       // Borda da barra
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.strokeRect(barraX, barraY, barraLargura, barraAltura);
     }
 
@@ -672,18 +683,22 @@
     let currentSelectedCards = [];
     function levelUp() {
       running = false;  
+      objects = []
+
 
       document.querySelector('.level').innerHTML = `Nivel ${level}`;
 
       const statusValues = [
           lives,
           maxLives,
-          player.speed,
-          gameSpeed, 
-          tamanho = `${playerSize}`, 
+          defense,
+          playerSpeed,
+          bulletSpeed,
+          bulletSize,
+          playerDamage,
+          playerSize,
           enemySize,
-          spawnInterval, 
-          playerDamage
+          gameSpeed
       ];
       
       // Iterar sobre os elementos status-item
@@ -730,37 +745,45 @@
     function selectCard(cardIndex) {
         if (currentSelectedCards.length > cardIndex) {
             const selectedCard = currentSelectedCards[cardIndex];
-            
-          //condicoes para efeito da carta escolhida
-        if(selectCard == "increase_health"){
-          increase_health()
+        
+        //condicoes para efeito da carta escolhida
+        if(selectedCard.effect == "increase_health"){
+          let num = Math.floor(Math.random() * (maxLives - lives));
+
+          lives += num;
         }
-        else if(selectCard == "increase_max_health"){
-          increase_max_health()
+
+        else if(selectedCard.effect == "increase_max_health"){
+          maxLives += 25;
         }
-        else if(selectCard == "grant_shield"){
-          grant_shield()
+
+        else if(selectedCard.effect == "grant_shield"){
+          defense += 4;
         }
-        else if(selectCard == "speed_steal"){
-          speed_steal()
+
+        else if(selectedCard.effect == "speed_steal"){
+          playerSpeed += 3;
+          gameSpeed -= 0.3;
         }
-        else if(selectCard == "increase_strength"){
-          increase_strength()
+
+        else if(selectedCard.effect == "increase_strength"){
+          playerDamage += 4;
         }
-        else if(selectCard == "decrease_size"){
-          decrease_size()
+
+        else if(selectedCard.effect == "decrease_size"){
+          playerSize -= 5;
         }
-        else if(selectCard == "increase_bullet_size"){
-          increase_bullet_size()
+        else if(selectedCard.effect == "increase_speed"){
+          playerSpeed += 5;
         }
-        else if(selectCard == "increase_bullet_damage"){
-          increase_bullet_damage()
+        else if(selectedCard.effect == "increase_bullet_size"){
+          bulletSize += 2;
         }
-        else if(selectCard == "auto_shoot"){
-          auto_shoot()
+        else if(selectedCard.effect == "increase_bullet_speed"){
+          bulletSpeed += 3;
         }
-            
-        backGame(); // Volta para o jogo após a seleção
+
+        backGame(); // Volta pro jogo
       }
     }
 
@@ -771,7 +794,6 @@
       overlay_powerup.style.display = "none";
       if (!running) { 
         running = true;
-        objects = []
         requestAnimationFrame(loop);
       }
     }
@@ -793,7 +815,7 @@
         if(score >= nextLevel){
           level ++;
           levelUp()
-          nextLevel = (score * 2) + (score /0,5)
+          nextLevel = nextLevel + score - (level*3)
         }
       }
     }
