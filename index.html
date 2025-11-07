@@ -1,79 +1,535 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Menu Inicial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nome do Jogo - Início</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-image: url('indexBG.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            height: 100vh;
-            color: white;
+        /* ================================================= */
+        /* === ESTILOS GERAIS E TEMA (VERMELHO E PRETO) === */
+        /* ================================================= */
+
+        :root {
+            --cor-principal: #c21414; /* Vermelho vibrante */
+            --cor-fundo: #1a1a1a;    /* Preto escuro */
+            --cor-texto: #ffffff;    /* Branco */
+            --cor-borda: #444444;    /* Cinza escuro para bordas */
+            --cor-hover: #cc0000;    /* Vermelho mais escuro para hover */
         }
 
-        .menu-container {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url(indexBG.png);
+            background-position: center;
+            background-size: cover;
+            color: var(--cor-texto);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+
+        }
+
+        /* ================================================= */
+        /* === CONTEÚDO PRINCIPAL (TELA INICIAL) === */
+        /* ================================================= */
+
+        .container {
+            max-width: 800px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            backdrop-filter: brightness(0.5);
         }
 
         h1 {
-            font-size: 60px;
-            margin-bottom: 50px;
-            text-shadow: 2px 2px 4px black;
+            color: red;
+            font-size: 5em;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px var(--cor-principal);
+            letter-spacing: 5px;
+            padding-bottom: 10px;
         }
 
-        h2 {
-            font-size: 100px;
-            margin-bottom: 0;
-            font-family: 'Georgia', serif;
-            color: #ff2020;
-            /**text-shadow: 4px 4px 10px black, 0 0 20px red;**/
-            letter-spacing: 4px;
-        }
-
-        button {
-            padding: 15px 40px;
-            font-size: 24px;
+        .opcoes-botoes {
+            display: flex;
+            flex-direction: column;
             width: 200px;
-            background-color: rgb(255, 0, 0);
-            border: none;
-            color: white;
+            gap: 15px;
+        }
+
+        .btn-principal {
+            background-color: var(--cor-principal);
+            color: var(--cor-texto);
+            border: 2px solid var(--cor-principal);
+            padding: 15px 30px;
+            font-size: 1.2em;
             cursor: pointer;
-            transition: 0.3s;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .btn-principal:hover {
+            background-color: var(--cor-hover);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6);
+            border-color: var(--cor-texto);
+        }
+
+        .btn-principal:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        
+
+        /* ================================================= */
+        /* === ESTILOS DOS MODAIS === */
+        /* ================================================= */
+
+        .modal-fundo {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Fundo escuro para destacar o modal */
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            animation: fadeBackground 0.3s ease-out;
+        }
+
+        @keyframes fadeBackground {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-conteudo {
+            background-color: var(--cor-fundo);
+            padding: 30px;
+            border: 2px solid var(--cor-principal);
             border-radius: 10px;
-            box-shadow: 0 0 10px red;
-            margin: 10px;
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
+            position: relative;
+            animation: modalPop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Efeito "pulo" */
+            max-height: 80vh;
+            overflow-y: auto; /* Para modais com muito conteúdo (Créditos/Apoie) */
         }
 
-        button:hover {
-            background-color: rgba(255, 0, 0, 1);
-            transform: scale(1.05);
+        @keyframes modalPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
-        audio {
+        .modal-header {
+            border-bottom: 2px solid var(--cor-principal);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--cor-principal);
+            margin: 0;
+            text-shadow: 0 0 5px var(--cor-principal);
+        }
+
+        .fechar-modal {
+            color: var(--cor-principal);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+
+        .fechar-modal:hover,
+        .fechar-modal:focus {
+            color: var(--cor-texto);
+            text-decoration: none;
+        }
+
+        /* Estilo Específico: Modal de Login */
+        #modal-login .modal-conteudo {
+            /* Fundo de imagem predefinido (usando um gradiente de exemplo) */
+            background-image: linear-gradient(rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.8)), url('https://via.placeholder.com/500x300/1a1a1a/ff0000?text=FUNDO+DE+LOGIN');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .form-grupo {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-grupo label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--cor-principal);
+            font-weight: bold;
+        }
+
+        .form-grupo input[type="text"],
+        .form-grupo input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid var(--cor-principal);
+            color: var(--cor-texto);
+            border-radius: 4px;
+        }
+
+        .dificuldade-opcoes {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .dificuldade-opcoes label {
+            background-color: #333;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .dificuldade-opcoes input[type="radio"] {
             display: none;
         }
+
+        .dificuldade-opcoes input[type="radio"]:checked + label {
+            background-color: var(--cor-principal);
+            border-color: var(--cor-texto);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .modal-rodape {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn-acao {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-limpar {
+            background-color: var(--cor-borda);
+            color: var(--cor-texto);
+        }
+        .btn-limpar:hover { background-color: #666; }
+
+        .btn-iniciar {
+            background-color: var(--cor-principal);
+            color: var(--cor-texto);
+            border: 2px solid var(--cor-principal);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        .btn-iniciar:hover { background-color: var(--cor-hover); border-color: var(--cor-texto); }
+
+        /* Estilo Específico: Modal de Créditos */
+        #modal-creditos ul {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        #modal-creditos li {
+            margin-bottom: 10px;
+            border-left: 3px solid var(--cor-principal);
+            padding-left: 10px;
+        }
+        .patrocinadores {
+            margin-top: 20px;
+            border-top: 1px dashed var(--cor-borda);
+            padding-top: 15px;
+            text-align: center;
+        }
+        .patrocinadores h4 { color: var(--cor-principal); }
+        .patrocinadores-img {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .patrocinadores-img img {
+            width: 100px;
+            height: 50px;
+            object-fit: contain;
+            background-color: var(--cor-texto);
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+        }
+
+        /* Estilo Específico: Modal de Apoie */
+        .pix-area {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid var(--cor-principal);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pix-qr-code {
+            width: 150px;
+            height: 150px;
+            background-color: var(--cor-texto); /* Simulação do QR Code */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        .pix-qr-code span {
+            color: #000;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .pix-copia-cola {
+            width: 100%;
+            background-color: #222;
+            padding: 10px;
+            border: 1px dashed var(--cor-principal);
+            word-break: break-all;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .btn-copiar {
+            background-color: var(--cor-principal);
+            color: var(--cor-texto);
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn-copiar:hover { background-color: var(--cor-hover); }
+
+        /* Estilo Específico: Modal de Opções */
+        #modal-opcoes p {
+            padding: 20px;
+            background-color: #333;
+            border: 1px solid var(--cor-borda);
+            border-radius: 5px;
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="menu-container">
-        <h2>Sun Slayer</h2>
-        <h1>Bem-vindo jogador! <br> Teste seu valor</h1>
-        <a href="jogo.html"><button>Jogar</button></a>
-        <a onclick="alert('WIP')"><button>Opções</button></a>
-        <a onclick="alert('Créditos:\nAnthony;\nJoão P. Santos; \nHigor Eduardo\nGabriel \n \nVersão 0.6');"><button>Créditos</button></a>
+    <div class="container">
+        <h1>Sun Slayer</h1> 
+        <div class="opcoes-botoes">
+            <button class="btn-principal" onclick="abrirModal('login')">JOGAR</button>
+            <button class="btn-principal" onclick="abrirModal('opcoes')">OPÇÕES</button>
+            <button class="btn-principal" onclick="abrirModal('creditos')">CRÉDITOS</button>
+            <button class="btn-principal" onclick="abrirModal('apoie')">APOIE</button>
+        </div>
     </div>
 
+    <div id="modal-login" class="modal-fundo">
+        <div class="modal-conteudo">
+            <span class="fechar-modal" onclick="fecharModal('login')">&times;</span>
+            <div class="modal-header">
+                <h2>Login de Jogador</h2>
+            </div>
+            
+            <form id="form-login">
+                <div class="form-grupo">
+                    <label for="nome">Nome / Nickname:</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Seu nome de jogador">
+                </div>
+                <div class="form-grupo">
+                    <label for="idade">Idade:</label>
+                    <input type="number" id="idade" name="idade" min="1" required placeholder="Sua idade">
+                </div>
+
+                <div class="form-grupo">
+                    <label>Dificuldade:</label>
+                    <div class="dificuldade-opcoes">
+                        <input type="radio" id="facil" name="dificuldade" value="Fácil" checked>
+                        <label for="facil">Fácil</label>
+                        
+                        <input type="radio" id="medio" name="dificuldade" value="Médio">
+                        <label for="medio">Médio</label>
+                        
+                        <input type="radio" id="dificil" name="dificuldade" value="Difícil">
+                        <label for="dificil">Difícil</label>
+                    </div>
+                </div>
+
+                <div class="modal-rodape">
+                    <button type="button" class="btn-acao btn-limpar" onclick="limparForm('form-login')">Limpar Registros</button>
+                    <button type="submit" class="btn-acao btn-iniciar">Iniciar Jogo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-opcoes" class="modal-fundo">
+        <div class="modal-conteudo">
+            <span class="fechar-modal" onclick="fecharModal('opcoes')">&times;</span>
+            <div class="modal-header">
+                <h2>Opções do Jogo</h2>
+            </div>
+            <p>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Laborum, nihil? Temporibus, aut dolore. Vitae at quos enim et exercitationem, rerum magnam non, reiciendis, eaque iusto pariatur odit? Magni, dolor!
+            </p>
+            <p>
+                Voluptates, velit! Vero, in eveniet harum quos illum iste hic non, assumenda consectetur, natus a dolore nemo? Voluptatum voluptatem in ad ab, dignissimos, laboriosam dolore, esse animi ipsam nihil optio.
+            </p>
+        </div>
+    </div>
+
+    <div id="modal-creditos" class="modal-fundo">
+        <div class="modal-conteudo">
+            <span class="fechar-modal" onclick="fecharModal('creditos')">&times;</span>
+            <div class="modal-header">
+                <h2>Créditos</h2>
+            </div>
+            
+            <ul>
+                <li><strong>Desenvolvedor Chefe:</strong> Seu Nome Aqui</li>
+                <li><strong>Artistas Gráficos:</strong> Equipe Arte Studio</li>
+                <li><strong>Design de Áudio/Música:</strong> Sonic Waves Productions</li>
+                <li><strong>Roteirista:</strong> Mestre das Histórias</li>
+                <li><strong>Testes (QA) e Colaboradores:</strong> Agradecimento Especial aos Beta Testers</li>
+            </ul>
+
+            <div class="patrocinadores">
+                <h4>Patrocinadores e Apoio</h4>
+                <div class="patrocinadores-img">
+                    <img src="https://via.placeholder.com/100x50/FFFFFF/000000?text=LOGO+1" alt="Patrocinador 1">
+                    <img src="https://via.placeholder.com/100x50/FFFFFF/000000?text=LOGO+2" alt="Patrocinador 2">
+                    <img src="https://via.placeholder.com/100x50/FFFFFF/000000?text=LOGO+3" alt="Patrocinador 3">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-apoie" class="modal-fundo">
+        <div class="modal-conteudo">
+            <span class="fechar-modal" onclick="fecharModal('apoie')">&times;</span>
+            <div class="modal-header">
+                <h2>Contribua com o Projeto</h2>
+            </div>
+            
+            <p>
+                Agradecemos imensamente o seu apoio! Sua contribuição nos ajuda a manter os servidores funcionando, a criar novo conteúdo e a melhorar a experiência de jogo.
+            </p>
+
+            <div class="pix-area">
+                <div class="pix-qr-code">
+                    <span>QR Code PIX</span>
+                </div>
+                
+                <div class="pix-copia-cola" id="pix-key">
+                    00020126330014BR.GOV.BC.PIX01111234567890053039865802BR5915NOME DO DEST.6008CIDADE SP62250521ABCDEFGHIJKLMN.56789
+                </div>
+                
+                <button class="btn-copiar" onclick="copiarPix()">Copiar Pix Copia e Cola</button>
+                <p id="mensagem-copia" style="color: var(--cor-principal); margin-top: 10px; display: none;">Copiado com sucesso!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para abrir um modal específico
+        function abrirModal(idModal) {
+            const modal = document.getElementById('modal-' + idModal);
+            if (modal) {
+                modal.style.display = 'flex'; // Exibe o modal
+            }
+        }
+
+        // Função para fechar um modal específico
+        function fecharModal(idModal) {
+            const modal = document.getElementById('modal-' + idModal);
+            if (modal) {
+                modal.style.display = 'none'; // Esconde o modal
+            }
+        }
+
+        // Fechar o modal ao clicar fora dele
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-fundo')) {
+                event.target.style.display = 'none';
+            }
+        }
+        
+        // Modal Login: Limpar Formulário
+        function limparForm(idForm) {
+            document.getElementById(idForm).reset();
+            alert("Dados de registro limpos!");
+        }
+        
+        // Modal Login: Lógica de Iniciar Jogo
+        document.getElementById('form-login').addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            
+            const nome = document.getElementById('nome').value;
+            const idade = document.getElementById('idade').value;
+            const dificuldade = document.querySelector('input[name="dificuldade"]:checked').value;
+            
+            alert(`Iniciando Jogo!\nNome: ${nome}\nIdade: ${idade}\nDificuldade: ${dificuldade}`);
+            
+            // **AQUI VOCÊ REDIRECIONARIA PARA A PÁGINA REAL DO JOGO**
+            // window.location.href = "pagina_do_jogo.html"; 
+            
+            fecharModal('login');
+        });
+
+        // Modal Apoie: Copiar Chave PIX
+        function copiarPix() {
+            const pixKeyElement = document.getElementById('pix-key');
+            const range = document.createRange();
+            range.selectNodeContents(pixKeyElement);
+            
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            try {
+                // Tenta executar o comando de cópia
+                document.execCommand('copy');
+                selection.removeAllRanges();
+                
+                // Exibe a mensagem de sucesso
+                const msg = document.getElementById('mensagem-copia');
+                msg.style.display = 'block';
+                setTimeout(() => { msg.style.display = 'none'; }, 2000); // Esconde após 2 segundos
+                
+            } catch (err) {
+                alert('Falha ao copiar o texto. Por favor, copie manualmente: ' + pixKeyElement.textContent);
+            }
+        }
+
+    </script>
 </body>
 </html>

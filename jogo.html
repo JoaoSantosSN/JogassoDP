@@ -196,11 +196,35 @@
         font-size: 1em;
         color: #555;
     }
+
+
+    #name{
+      position: fixed;
+      top: -10px;
+      left: 10px;
+      color: white;
+    }
+    #level{
+      position: fixed;
+      top: 0px;
+      right: 15px;
+      color: white;
+    }
+    #score{
+      position: fixed;
+      bottom: -10px;
+      left: 10px;
+      color: white;
+    }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas> <!-- Canvas onde o jogo será desenhado -->
-  
+
+  <h1 id="name">Nome do jogador</h1>
+  <h2 id="level"></h2>
+  <h2 id="score"></h2>
+
   <!-- Overlay de Game Over -->
   <div id="overlay">
     <h1 id="overlayTitle">Game Over</h1> <!-- Título do overlay -->
@@ -208,6 +232,7 @@
     <button id="btnRestart">Reiniciar</button> <!-- Botão para reiniciar -->
   </div>
 
+  <!-- Overlay de escolha de cartas -->
   <div class="overlay" id="power-up-overlay">
       <div class="container">
           <div class="main-content">
@@ -241,14 +266,16 @@
 
           <div class="status-panel">
               <h2>status</h2>
+              <div class="status-item">Velocidade do jogo: <strong></strong></div>
+              <div class="status-item">Deplay de evasão: <strong></strong></div>
               <div class="status-item">Vida atual: <strong></strong></div>
               <div class="status-item">Vida maxima: <strong></strong></div>
               <div class="status-item">Defesa: <strong></strong></div>
-              <div class="status-item">Velocidade da bala: <strong></strong></div>
-              <div class="status-item">Tamanho da bala: <strong></strong></div>
-              <div class="status-item">Dano da bala: <strong></strong></div>
               <div class="status-item">Velocidade do jogador: <strong></strong></div>
               <div class="status-item">Tamanho do jogador: <strong></strong></div>
+              <div class="status-item">Dano de ataque: <strong></strong></div>
+              <div class="status-item">Velocidade de ataque: <strong></strong></div>
+              <div class="status-item">Tamanho da bala: <strong></strong></div>
               <div class="status-item">Tamanho dos inimigos: <strong></strong></div>
 
           </div>
@@ -268,7 +295,7 @@
       { id: '7', src: 'personagens/muzan.png',     dangerous: true, points: 20, nivelBase: 17, enemyDamage: 35, life: 38}, 
       
       { id: '8', src: 'personagens/miniboss.png',  dangerous: true, points: 30, nivelBase: 10, enemyDamage: 50, life: 38}, 
-      { id: '9', src: 'personagens/boss.png',      dangerous: true, points: 13, nivelBase: 20, enemyDamage: 10-0, life: 100}, 
+      { id: '9', src: 'personagens/boss.png',      dangerous: true, points: 13, nivelBase: 20, enemyDamage: 1000, life: 100}, 
 
     ];
 
@@ -316,7 +343,7 @@
     let maxLives = 100; // maximo de vidas
     let lives = 100; // vidas iniciais
     let gameSpeed = 2; // velocidade base de queda dos objetos
-    let spawnInterval = 500; // intervalo de spawn em ms
+    let spawnInterval = 200; // intervalo de spawn em ms
     let lastSpawn = 0; // timestamp do último spawn
     let lastTime = 0; // timestamp do último frame
     let running = true; // flag para saber se o jogo está rodando
@@ -327,11 +354,10 @@
     
 
     //buffs
-    let autoShoot = false;
-    let defense = 0;
-
+    let dragons = 0; //numero de dragões
+    let defense = 0; //defesa do jogador
+    let mana = 0; //mana adicional
     let field = false;
-    let help = 0;
 
     // Overlay
     const overlay = document.getElementById('overlay'); // overlay de Game Over
@@ -413,13 +439,20 @@
         image: "cartas/bala_rapida.png",
         description: "Aumenta a velocidade da bala em +3.",
         effect: "increase_bullet_speed",
+      },
+      {
+        name: "Dragão amigo",
+        image: "cartas/dragao.png",
+        description: "Aumenta o numero de dragões +1 e evasão +100ms jogo 50%",
+        effect: "increase_dragons",
+      },
+      {
+        name: "Pesquisador",
+        image: "cartas/mana.png",
+        description: "Aumenta o ganho de mana em +5 por inimigo.",
+        effect: "increase_dragons",
       }
     ]; 
-
-
-
-    
-
 
 
     // Escolher tipo de objeto baseado na probabilidade
@@ -437,7 +470,14 @@
 
     // Spawn de objetos
     function spawnObject() {
-      //shoot() //remova esta chamada para tirar o tiro automatico
+      if (dragons>0) {
+        for (let i = 0; i < dragons; i++) {
+          let delay = i * 600; 
+          setTimeout(() => {
+            shoot()
+          }, delay);
+        }
+      }
 
       const t = chooseType(); 
       const side = Math.floor(Math.random() * 4); // 0: topo, 1: direita, 2: baixo, 3: esquerda
@@ -584,7 +624,7 @@
             objects.splice(i, 1);
             if (lives <= 0) endGame();
           } else {
-            score += o.points;
+            score += (o.points + mana);
             objects.splice(i, 1);
           }
           continue;
@@ -689,16 +729,17 @@
       document.querySelector('.level').innerHTML = `Nivel ${level}`;
 
       const statusValues = [
+          gameSpeed, 
+          delay =`${spawnInterval}ms`,
           lives,
           maxLives,
           defense,
           playerSpeed,
+          playerSize,
+          playerDamage,
           bulletSpeed,
           bulletSize,
-          playerDamage,
-          playerSize,
           enemySize,
-          gameSpeed
       ];
       
       // Iterar sobre os elementos status-item
@@ -782,6 +823,11 @@
         else if(selectedCard.effect == "increase_bullet_speed"){
           bulletSpeed += 3;
         }
+        else if(selectedCard.effect == "increase_dragons"){
+          dragons += 1;
+          spawnInterval += 100;
+          gameSpeed += 0.5;
+        }
 
         backGame(); // Volta pro jogo
       }
@@ -797,7 +843,9 @@
         requestAnimationFrame(loop);
       }
     }
-    
+
+    scoreUpdate = document.getElementById('score');
+    levelUpdate = document.getElementById('level');
     // Loop principal
     function loop(timestamp) {
       if (!lastTime) lastTime = timestamp;
@@ -815,8 +863,13 @@
         if(score >= nextLevel){
           level ++;
           levelUp()
-          nextLevel = nextLevel + score - (level*3)
+          nextLevel = nextLevel + (level * 50);
+          nextLevel = Math.trunc(nextLevel);
         }
+
+        levelUpdate.innerHTML = `Nivel: ${level}`;
+        scoreUpdate.innerHTML = `Pontuação atual: ${score} <br> ${nextLevel-score} pontos para nivel ${level+1}`;
+
       }
     }
 
