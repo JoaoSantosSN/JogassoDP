@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nome do Jogo - Início</title>
     <style>
-        /* ================================================= */
-        /* === ESTILOS GERAIS E TEMA (VERMELHO E PRETO) === */
-        /* ================================================= */
-
+        *{
+            transition: all 1s eases;
+        }
+        
         :root {
             --cor-principal: #c21414; /* Vermelho vibrante */
+            --cor-texto-vm: rgb(245, 38, 38);
             --cor-fundo: #1a1a1a;    /* Preto escuro */
             --cor-texto: #ffffff;    /* Branco */
             --cor-borda: #444444;    /* Cinza escuro para bordas */
@@ -21,7 +22,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-image: url(indexBG.png);
+            background-image: url('media/background.png');
             background-position: center;
             background-size: cover;
             color: var(--cor-texto);
@@ -89,28 +90,19 @@
 
         
 
-        /* ================================================= */
-        /* === ESTILOS DOS MODAIS === */
-        /* ================================================= */
+        /*  ESTILOS DOS MODAIS  */
 
         .modal-fundo {
-            display: none; /* Escondido por padrão */
+            display: none;
             position: fixed;
             z-index: 100;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.85); /* Fundo escuro para destacar o modal */
-            backdrop-filter: blur(8px);
+            background-color: #000000b0;
             justify-content: center;
             align-items: center;
-            animation: fadeBackground 0.3s ease-out;
-        }
-
-        @keyframes fadeBackground {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .modal-conteudo {
@@ -120,28 +112,18 @@
             border-radius: 10px;
             max-width: 90%;
             width: 500px;
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.8);
             position: relative;
-            animation: modalPop 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Efeito "pulo" */
             max-height: 80vh;
-            overflow-y: auto; /* Para modais com muito conteúdo (Créditos/Apoie) */
+            overflow-y: auto;
         }
-
-        @keyframes modalPop {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
         .modal-header {
-            border-bottom: 2px solid var(--cor-principal);
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
 
         .modal-header h2 {
-            color: var(--cor-principal);
+            color: rgb(255, 53, 53);
             margin: 0;
-            text-shadow: 0 0 5px var(--cor-principal);
         }
 
         .fechar-modal {
@@ -162,14 +144,6 @@
             text-decoration: none;
         }
 
-        /* Estilo Específico: Modal de Login */
-        #modal-login .modal-conteudo {
-            /* Fundo de imagem predefinido (usando um gradiente de exemplo) */
-            background-image: linear-gradient(rgba(26, 26, 26, 0.8), rgba(26, 26, 26, 0.8)), url('https://via.placeholder.com/500x300/1a1a1a/ff0000?text=FUNDO+DE+LOGIN');
-            background-size: cover;
-            background-position: center;
-        }
-
         .form-grupo {
             margin-bottom: 15px;
             text-align: left;
@@ -178,7 +152,7 @@
         .form-grupo label {
             display: block;
             margin-bottom: 5px;
-            color: var(--cor-principal);
+            color: var(--cor-texto-vm);
             font-weight: bold;
         }
 
@@ -190,31 +164,6 @@
             border: 1px solid var(--cor-principal);
             color: var(--cor-texto);
             border-radius: 4px;
-        }
-
-        .dificuldade-opcoes {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .dificuldade-opcoes label {
-            background-color: #333;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 1px solid #333;
-            transition: all 0.3s;
-        }
-
-        .dificuldade-opcoes input[type="radio"] {
-            display: none;
-        }
-
-        .dificuldade-opcoes input[type="radio"]:checked + label {
-            background-color: var(--cor-principal);
-            border-color: var(--cor-texto);
-            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
 
         .modal-rodape {
@@ -246,6 +195,7 @@
         }
         .btn-iniciar:hover { background-color: var(--cor-hover); border-color: var(--cor-texto); }
 
+
         /* Estilo Específico: Modal de Créditos */
         #modal-creditos ul {
             list-style: none;
@@ -262,13 +212,17 @@
             border-top: 1px dashed var(--cor-borda);
             padding-top: 15px;
             text-align: center;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
         }
         .patrocinadores h4 { color: var(--cor-principal); }
         .patrocinadores-img {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            background-image: url('media/senai.png');
+            background-position: center;
+            background-size: cover;
+            width: 50%;
+            height: 70px;
         }
         .patrocinadores-img img {
             width: 100px;
@@ -286,7 +240,6 @@
             padding: 20px;
             border-radius: 8px;
             margin-top: 15px;
-            border: 1px solid var(--cor-principal);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -303,10 +256,8 @@
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
-        .pix-qr-code span {
-            color: #000;
-            font-size: 0.8em;
-            font-weight: bold;
+        .pix-qr-code img {
+            width: 100%;
         }
 
         .pix-copia-cola {
@@ -346,7 +297,7 @@
     <div class="container">
         <h1>Sun Slayer</h1> 
         <div class="opcoes-botoes">
-            <button class="btn-principal" onclick="abrirModal('login')">JOGAR</button>
+            <button class="btn-principal" onclick="abrirModal('login'), tocarSom()">JOGAR</button>
             <button class="btn-principal" onclick="abrirModal('opcoes')">OPÇÕES</button>
             <button class="btn-principal" onclick="abrirModal('creditos')">CRÉDITOS</button>
             <button class="btn-principal" onclick="abrirModal('apoie')">APOIE</button>
@@ -357,10 +308,10 @@
         <div class="modal-conteudo">
             <span class="fechar-modal" onclick="fecharModal('login')">&times;</span>
             <div class="modal-header">
-                <h2>Login de Jogador</h2>
+                <h2>Cadastro de Jogador</h2>
             </div>
             
-            <form id="form-login">
+            <form method="GET" action="jogo.html" id="form-login">
                 <div class="form-grupo">
                     <label for="nome">Nome / Nickname:</label>
                     <input type="text" id="nome" name="nome" required placeholder="Seu nome de jogador">
@@ -370,23 +321,9 @@
                     <input type="number" id="idade" name="idade" min="1" required placeholder="Sua idade">
                 </div>
 
-                <div class="form-grupo">
-                    <label>Dificuldade:</label>
-                    <div class="dificuldade-opcoes">
-                        <input type="radio" id="facil" name="dificuldade" value="Fácil" checked>
-                        <label for="facil">Fácil</label>
-                        
-                        <input type="radio" id="medio" name="dificuldade" value="Médio">
-                        <label for="medio">Médio</label>
-                        
-                        <input type="radio" id="dificil" name="dificuldade" value="Difícil">
-                        <label for="dificil">Difícil</label>
-                    </div>
-                </div>
-
                 <div class="modal-rodape">
-                    <button type="button" class="btn-acao btn-limpar" onclick="limparForm('form-login')">Limpar Registros</button>
-                    <button type="submit" class="btn-acao btn-iniciar">Iniciar Jogo</button>
+                    <button type="reset" class="btn-acao btn-limpar">Limpar Registros</button>
+                    <button type="submit" class="btn-acao btn-iniciar" >Iniciar Jogo</button>
                 </div>
             </form>
         </div>
@@ -415,19 +352,14 @@
             </div>
             
             <ul>
-                <li><strong>Desenvolvedor Chefe:</strong> Seu Nome Aqui</li>
-                <li><strong>Artistas Gráficos:</strong> Equipe Arte Studio</li>
-                <li><strong>Design de Áudio/Música:</strong> Sonic Waves Productions</li>
-                <li><strong>Roteirista:</strong> Mestre das Histórias</li>
-                <li><strong>Testes (QA) e Colaboradores:</strong> Agradecimento Especial aos Beta Testers</li>
+                <li><strong>Desenvolvedor Chefe:</strong> João P. Santos</li>
+                <li><strong>Roteirista:</strong> Anthony</li>
+                <li><strong>Artistas Gráficos:</strong> Gabriel </li>
+                <li><strong>Design de Áudio/Música:</strong> Higor</li>
             </ul>
 
             <div class="patrocinadores">
-                <h4>Patrocinadores e Apoio</h4>
                 <div class="patrocinadores-img">
-                    <img src="https://via.placeholder.com/100x50/FFFFFF/000000?text=LOGO+1" alt="Patrocinador 1">
-                    <img src="https://via.placeholder.com/100x50/FFFFFF/000000?text=LOGO+2" alt="Patrocinador 2">
-                    <img src="https://via.placeholder.com/100x50/FFFFFF/000000?text=LOGO+3" alt="Patrocinador 3">
                 </div>
             </div>
         </div>
@@ -441,16 +373,16 @@
             </div>
             
             <p>
-                Agradecemos imensamente o seu apoio! Sua contribuição nos ajuda a manter os servidores funcionando, a criar novo conteúdo e a melhorar a experiência de jogo.
+                Nos ajude a manter o jogo funcinando e apoie o nosso trabalho!    
             </p>
 
             <div class="pix-area">
                 <div class="pix-qr-code">
-                    <span>QR Code PIX</span>
+                    <img src="media/qrcode_pix.png" alt="qrcode_pix">
                 </div>
                 
                 <div class="pix-copia-cola" id="pix-key">
-                    00020126330014BR.GOV.BC.PIX01111234567890053039865802BR5915NOME DO DEST.6008CIDADE SP62250521ABCDEFGHIJKLMN.56789
+                    00020126880014BR.GOV.BCB.PIX013694e1f445-24b1-401f-8e30-9f127a14bfd60226Ajuda para o desenvolvedor5204000053039865802BR5921Joao Pedro dos Santos6009SAO PAULO62140510QN0Td7UIOh63046261
                 </div>
                 
                 <button class="btn-copiar" onclick="copiarPix()">Copiar Pix Copia e Cola</button>
@@ -460,11 +392,17 @@
     </div>
 
     <script>
+        const backgrounSound = new Audio('sons/backgroundSound.m4a'); 
+        function tocarSom( ) {
+            console.log("Iniciando som de fundo...");
+            backgrounSound.play(); 
+        };
         // Função para abrir um modal específico
         function abrirModal(idModal) {
             const modal = document.getElementById('modal-' + idModal);
             if (modal) {
-                modal.style.display = 'flex'; // Exibe o modal
+                document.body.style.backgroundImage = "url('media/background2.png')";
+                modal.style.display = 'flex'; 
             }
         }
 
@@ -472,38 +410,12 @@
         function fecharModal(idModal) {
             const modal = document.getElementById('modal-' + idModal);
             if (modal) {
-                modal.style.display = 'none'; // Esconde o modal
+                document.body.style.backgroundImage = "url('media/background.png')";
+                modal.style.display = 'none'; 
             }
         }
 
-        // Fechar o modal ao clicar fora dele
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal-fundo')) {
-                event.target.style.display = 'none';
-            }
-        }
-        
-        // Modal Login: Limpar Formulário
-        function limparForm(idForm) {
-            document.getElementById(idForm).reset();
-            alert("Dados de registro limpos!");
-        }
-        
-        // Modal Login: Lógica de Iniciar Jogo
-        document.getElementById('form-login').addEventListener('submit', function(event) {
-            event.preventDefault(); // Impede o envio padrão do formulário
-            
-            const nome = document.getElementById('nome').value;
-            const idade = document.getElementById('idade').value;
-            const dificuldade = document.querySelector('input[name="dificuldade"]:checked').value;
-            
-            alert(`Iniciando Jogo!\nNome: ${nome}\nIdade: ${idade}\nDificuldade: ${dificuldade}`);
-            
-            // **AQUI VOCÊ REDIRECIONARIA PARA A PÁGINA REAL DO JOGO**
-            // window.location.href = "pagina_do_jogo.html"; 
-            
-            fecharModal('login');
-        });
+    
 
         // Modal Apoie: Copiar Chave PIX
         function copiarPix() {

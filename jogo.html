@@ -6,16 +6,26 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"> <!-- Responsivo para dispositivos móveis -->
 
   <style>
+    :root {
+      --cor-principal: #c21414; 
+      --cor-texto-vm: rgb(245, 38, 38);
+      --cor-fundo: #1a1a1a;   
+      --cor-texto: #ffffff;  
+      --cor-borda: #444444;   
+      --cor-hover: #cc0000;   
+    }
+
     html, body {
       height: 100%; 
       margin: 0; 
-    } /* Ocupa toda a tela e remove margens padrão */
+    }
     body { 
       background: #000; 
       display:flex; 
       align-items:center; 
       justify-content:center; 
-    } /* Fundo preto e centraliza conteúdo */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
     canvas { display:block; }
     
     /* Overlay para Game Over */
@@ -39,29 +49,29 @@
       cursor:pointer; 
     }
 
+    /* Overlay de escolha de cartas */
     .overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.7); 
+      background-color: #000000b0;
       justify-content: center;
       align-items: center;
       z-index: 1000;
       display: none; 
     }
     .container {
-        border: 2px solid #333;
-        border-radius: 10px;
-        padding: 20px;
-        background-color: #fff;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        display: grid;
-        grid-template-columns: 2fr 1fr; 
-        gap: 20px;
-        width: 90%;
-        max-width: 1200px;
+      border: 2px solid var(--cor-principal);
+      border-radius: 10px;
+      background-color: var(--cor-fundo);
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 2fr 1fr; 
+      gap: 20px;
+      width: 90%;
+      max-width: 1200px;
     }
 
     .main-content {
@@ -71,22 +81,22 @@
     }
 
     .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
     .header h1 {
-        margin: 0;
-        font-size: 2em;
-        color: #333;
+      margin: 0;
+      font-size: 2em;
+      color: var(--cor-hover);
     }
 
     .header .level {
-        font-size: 1.5em;
-        font-weight: bold;
-        color: #555;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: var(--cor-hover);
     }
 
     .card-selection {
@@ -97,7 +107,8 @@
     }
 
     .card {
-      border: 2px solid #555;
+      background-color: #000000d2;
+      border: 2px solid #ff3636;
       border-radius: 2px;
       padding: 15px;
       width: 200px;
@@ -107,7 +118,7 @@
       justify-content: space-between;
       align-items: center;
       text-align: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 4px var(--cor-principal);
       transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
       cursor: pointer;
     }
@@ -118,83 +129,85 @@
     }
 
     .card-title {
-        font-size: 1.3em;
-        font-weight: bold;
-        color: #444;
-        margin-bottom: 15px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: var(--cor-principal);
+      margin-bottom: 15px;
     }
 
     .card-description {
-        font-size: 0.95em;
-        color: #292929;
-        line-height: 1.4;
+      font-size: 1em;
+      color: var(--cor-texto-vm);
+      line-height: 1.4;
+      font-weight: 500;
     }
 
     .cancel-button-wrapper {
-        display: flex;
-        justify-content: center;
-        margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
     }
 
     .cancel-level-button {
-        background-color: #e74c3c;
-        color: white;
-        padding: 12px 25px;
-        border: none;
-        border-radius: 5px;
-        font-size: 1.1em;
-        cursor: pointer;
-        transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+      background-color: #000000d2;
+      color: #ff3636;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
     }
 
     .cancel-level-button:hover {
-        background-color: #c0392b;
-        transform: translateY(-2px);
+      background-color: #1a1a1a;
+      transform: translateY(-2px);
     }
     .card-image img{
       width: 150px;
     }
 
     .status-panel {
-        border: 2px solid #333;
-        border-radius: 8px;
-        padding: 15px;
-        background-color: #f2f2f2;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border: 2px solid var(--cor-principal);
+      border-radius: 8px;
+      padding: 15px;
+      background-color: #000000d2;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     .status-panel h2 {
-        margin-top: 0;
-        font-size: 1.8em;
-        color: #333;
-        margin-bottom: 15px;
+      margin-top: 0;
+      font-size: 1.8em;
+      color: var(--cor-hover);
+      margin-bottom: 15px;
     }
 
     .status-item {
-        margin-bottom: 8px;
-        font-size: 1.05em;
-        color: #444;
+      margin-bottom: 8px;
+      font-size: 1.05em;
+      color: var(--cor-principal);
     }
 
     .status-item strong {
-        color: #222;
+      color: var(--cor-texto-vm);
+      font-weight: 600;
     }
 
     .separator {
-        border-top: 1px dashed #aaa;
-        margin: 15px 0;
+      border-top: 1px dashed #aaa;
+      margin: 15px 0;
     }
 
     .skills-list {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
     }
 
     .skills-list li {
-        margin-bottom: 5px;
-        font-size: 1em;
-        color: #555;
+      margin-bottom: 5px;
+      font-size: 1em;
+      color: #555;
     }
 
 
@@ -260,17 +273,18 @@
               </div>
 
               <div class="cancel-button-wrapper">
-                  <button class="cancel-level-button" onclick="backGame()">cancelar nivel</button>
+                  <button class="cancel-level-button" onclick="backGame('cancel')">Cancelar +50% dos pontos</button>
               </div>
           </div>
 
           <div class="status-panel">
-              <h2>status</h2>
+              <h2>Status do jogador</h2>
               <div class="status-item">Velocidade do jogo: <strong></strong></div>
               <div class="status-item">Deplay de evasão: <strong></strong></div>
               <div class="status-item">Vida atual: <strong></strong></div>
               <div class="status-item">Vida maxima: <strong></strong></div>
               <div class="status-item">Defesa: <strong></strong></div>
+              <div class="status-item">Dragões: <strong></strong></div>
               <div class="status-item">Velocidade do jogador: <strong></strong></div>
               <div class="status-item">Tamanho do jogador: <strong></strong></div>
               <div class="status-item">Dano de ataque: <strong></strong></div>
@@ -312,7 +326,9 @@
     const playerImg = new Image(); playerImg.src = 'personagens/yoriichi.png'; // imagem do jogador
     const bulletImg = new Image(); bulletImg.src = 'sun.png'; // imagem da bala
     
-    const shootSound = new Audio('tiro.mp3'); //a rquivo do tiro
+    const shootSound = new Audio('sons/tiro.mp3'); //som do tiro
+    const hitSound = new Audio('sons/dano.mp3'); //som do dano
+    const deadSound = new Audio('sons/morte_inimigo.mp3'); //som da morte
 
     // Canvas full screen
     const canvas = document.getElementById('gameCanvas'); // pega o elemento canvas
@@ -330,7 +346,7 @@
 
 
     // Estado do jogo
-    let playerSpeed = 5; // velocidade do jogador
+    let playerSpeed = 9; // velocidade do jogador
     let playerSize = 80; // tamanho do jogador
     let player = { x: canvas.width/2 - 30, y: canvas.height/2 - 30, width: playerSize, height: playerSize, speed: playerSpeed }; // posição, tamanho e velocidade do jogador
     let barraX = player.x - 5; //posicao x da barra de vida
@@ -343,7 +359,7 @@
     let maxLives = 100; // maximo de vidas
     let lives = 100; // vidas iniciais
     let gameSpeed = 2; // velocidade base de queda dos objetos
-    let spawnInterval = 200; // intervalo de spawn em ms
+    let spawnInterval = 400; // intervalo de spawn em ms
     let lastSpawn = 0; // timestamp do último spawn
     let lastTime = 0; // timestamp do último frame
     let running = true; // flag para saber se o jogo está rodando
@@ -372,6 +388,8 @@
       window.addEventListener('mousedown', e => {
         keys[e.key] = true;
         if (e.button === 0) { 
+          shootSound.currentTime = 0; // reinicia o som caso ele ainda esteja tocando
+          shootSound.play(); // toca o som
           shoot(); // chama a funcao de tiro
         }
       });
@@ -407,7 +425,7 @@
       {
         name: "Veloz",
         image: "cartas/velocidade.png",
-        description: "Almenta sua velocidade em +5",
+        description: "Almenta sua velocidade em +3",
         effect: "increase_speed"
       },
       {
@@ -533,9 +551,6 @@
     
     // Atirar
     function shoot() {
-      //shootSound.currentTime = 0; // reinicia o som caso ele ainda esteja tocando
-      //shootSound.play();           // toca o som
-
       const closestEnemy = findClosestEnemy();
       let dirX, dirY;
       
@@ -622,6 +637,8 @@
           if (o.dangerous) {
             lives -= (o.enemyDamage - defense);
             objects.splice(i, 1);
+            hitSound.play(); 
+
             if (lives <= 0) endGame();
           } else {
             score += (o.points + mana);
@@ -659,6 +676,7 @@
             objects[j].life -= playerDamage
             if(objects[j].life <= 0){
               objects.splice(j,1);
+              deadSound.play();
             }
             bullets.splice(i,1);
             break;
@@ -734,12 +752,14 @@
           lives,
           maxLives,
           defense,
+          dragons,
           playerSpeed,
           playerSize,
           playerDamage,
           bulletSpeed,
           bulletSize,
           enemySize,
+
       ];
       
       // Iterar sobre os elementos status-item
@@ -815,7 +835,7 @@
           playerSize -= 5;
         }
         else if(selectedCard.effect == "increase_speed"){
-          playerSpeed += 5;
+          playerSpeed += 3;
         }
         else if(selectedCard.effect == "increase_bullet_size"){
           bulletSize += 2;
@@ -825,24 +845,14 @@
         }
         else if(selectedCard.effect == "increase_dragons"){
           dragons += 1;
-          spawnInterval += 100;
+          spawnInterval -= 100;
           gameSpeed += 0.5;
         }
 
-        backGame(); // Volta pro jogo
+        backGame(0); // Volta pro jogo
       }
     }
 
-
-
-    function backGame() {
-      const overlay_powerup = document.getElementById('power-up-overlay');
-      overlay_powerup.style.display = "none";
-      if (!running) { 
-        running = true;
-        requestAnimationFrame(loop);
-      }
-    }
 
     scoreUpdate = document.getElementById('score');
     levelUpdate = document.getElementById('level');
@@ -872,6 +882,21 @@
 
       }
     }
+    
+    function backGame(arg) {
+      const overlay_powerup = document.getElementById('power-up-overlay');
+      overlay_powerup.style.display = "none";
+      if (!running) { 
+        if (arg == 'cancel') {
+          score = score + ((nextLevel-score) / 4);
+          running = true;
+          requestAnimationFrame(loop);
+        }
+        running = true;
+        requestAnimationFrame(loop);
+      }
+    }
+
 
     // Inicia jogo quando imagem de fundo carrega
     bgImg.onload = () => { lastSpawn = performance.now(); lastTime = performance.now(); requestAnimationFrame(loop); };
