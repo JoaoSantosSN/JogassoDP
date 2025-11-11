@@ -19,14 +19,13 @@
       height: 100%; 
       margin: 0; 
     }
-    body { 
-      background: #000; 
+    body {
       display:flex; 
       align-items:center; 
       justify-content:center; 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    canvas { display:block; }
+    canvas { display:block; background-repeat: repeat;}
     
     /* Overlay para Game Over */
     #overlay {
@@ -302,15 +301,11 @@
       { id: '1', src: 'personagens/dragao.png',    dangerous: true, points: 2,  nivelBase: 1,  enemyDamage: 5,  life: 5 },
       { id: '2', src: 'personagens/mago.png',      dangerous: true, points: 4,  nivelBase: 2,  enemyDamage: 10, life: 10},
       { id: '3', src: 'personagens/Gyotaro.png',   dangerous: true, points: 6,  nivelBase: 4,  enemyDamage: 15, life: 15},
-      { id: '4', src: 'personagens/zohakuten.png', dangerous: true, points: 8,  nivelBase: 7,  enemyDamage: 15, life: 20}, 
+      { id: '4', src: 'personagens/zohakuten.png', dangerous: true, points: 8,  nivelBase: 7,  enemyDamage: 20, life: 20}, 
       
       { id: '5', src: 'personagens/akaza.png',     dangerous: true, points: 12, nivelBase: 11, enemyDamage: 25, life: 23}, 
       { id: '6', src: 'personagens/Kokoshibu.png', dangerous: true, points: 16, nivelBase: 15, enemyDamage: 30, life: 30},
-      { id: '7', src: 'personagens/muzan.png',     dangerous: true, points: 20, nivelBase: 17, enemyDamage: 35, life: 38}, 
-      
-      { id: '8', src: 'personagens/miniboss.png',  dangerous: true, points: 30, nivelBase: 10, enemyDamage: 50, life: 38}, 
-      { id: '9', src: 'personagens/boss.png',      dangerous: true, points: 13, nivelBase: 20, enemyDamage: 1000, life: 100}, 
-
+      { id: '7', src: 'personagens/muzan.png',     dangerous: true, points: 20, nivelBase: 17, enemyDamage: 35, life: 38}
     ];
 
 
@@ -330,6 +325,9 @@
     const hitSound = new Audio('sons/dano.mp3'); //som do dano
     const deadSound = new Audio('sons/morte_inimigo.mp3'); //som da morte
 
+    const gameSound = new Audio('sons/darksouls.mp3'); //musica de fundo
+    gameSound.volume = 0.2; //volume da musica
+
     // Canvas full screen
     const canvas = document.getElementById('gameCanvas'); // pega o elemento canvas
     const ctx = canvas.getContext('2d'); // contexto 2D para desenhar
@@ -347,7 +345,7 @@
 
     // Estado do jogo
     let playerSpeed = 9; // velocidade do jogador
-    let playerSize = 80; // tamanho do jogador
+    let playerSize = 70; // tamanho do jogador
     let player = { x: canvas.width/2 - 30, y: canvas.height/2 - 30, width: playerSize, height: playerSize, speed: playerSpeed }; // posição, tamanho e velocidade do jogador
     let barraX = player.x - 5; //posicao x da barra de vida
     let barraY = player.y + 75; //posicao y da barra de vida
@@ -359,20 +357,21 @@
     let maxLives = 100; // maximo de vidas
     let lives = 100; // vidas iniciais
     let gameSpeed = 2; // velocidade base de queda dos objetos
-    let spawnInterval = 400; // intervalo de spawn em ms
+    let spawnInterval = 350; // intervalo de spawn em ms
     let lastSpawn = 0; // timestamp do último spawn
     let lastTime = 0; // timestamp do último frame
     let running = true; // flag para saber se o jogo está rodando
     let playerDamage = 5; //dano do jogador
     let bulletSpeed = 12; //velocidade da bala
     let bulletSize = 15; //tamanho da bala
-    let enemySize = 70; //tamanho dos inimigos
+    let enemySize = 60; //tamanho dos inimigos
+    let bossFight = false;
     
 
     //buffs
     let dragons = 0; //numero de dragões
     let defense = 0; //defesa do jogador
-    let mana = 0; //mana adicional
+    let mana = 1; //mana adicional
     let field = false;
 
     // Overlay
@@ -383,13 +382,11 @@
 
     // Controles do tiro
     let canShoot = true; // variavel pra permitir tiro
-    const COOLDOWN = 600; // delay pra 
+    const COOLDOWN = 600; // delay pro próximo tiro 
     if (canShoot) {
       window.addEventListener('mousedown', e => {
         keys[e.key] = true;
         if (e.button === 0) { 
-          shootSound.currentTime = 0; // reinicia o som caso ele ainda esteja tocando
-          shootSound.play(); // toca o som
           shoot(); // chama a funcao de tiro
         }
       });
@@ -397,9 +394,6 @@
     setTimeout(() => {
       canShoot = true;
     }, COOLDOWN);
-
-    
-
 
 
     //logica das cartas
@@ -467,8 +461,8 @@
       {
         name: "Pesquisador",
         image: "cartas/mana.png",
-        description: "Aumenta o ganho de mana em +5 por inimigo.",
-        effect: "increase_dragons",
+        description: "Aumenta o ganho de mana em 0.3 por inimigo.",
+        effect: "increase_mana",
       }
     ]; 
 
@@ -488,15 +482,13 @@
 
     // Spawn de objetos
     function spawnObject() {
-      if (dragons>0) {
+      if (dragons > 0) {
         for (let i = 0; i < dragons; i++) {
-          let delay = i * 600; 
           setTimeout(() => {
             shoot()
-          }, delay);
+          }, 400);
         }
       }
-
       const t = chooseType(); 
       const side = Math.floor(Math.random() * 4); // 0: topo, 1: direita, 2: baixo, 3: esquerda
       let x, y;
@@ -525,6 +517,29 @@
       });
     }
 
+    function spawnBoss() {
+      if (bossFight) return; // Já está em luta contra o boss
+
+      const x = canvas.width / 2 - enemySize / 2;
+      const y = -enemySize * 2 + 50;
+
+      if(level==10){
+        setTimeout(() => {
+          objects.push({ 
+            type: '8', x, y, width: enemySize * 3, height: enemySize * 3, img: images['8'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: lives, life: 250 
+          });
+        }, 5000);
+      }
+      else{
+        setTimeout(() => {
+          objects.push({ 
+            type: '9', x, y, width: enemySize * 4, height: enemySize * 4, img: images['9'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: lives, life: 300 
+          });
+        }, 5000);
+      }
+
+      bossFight = true;
+    }
 
     // Encontrar o inimigo mais próximo
     function findClosestEnemy() {
@@ -641,7 +656,6 @@
 
             if (lives <= 0) endGame();
           } else {
-            score += (o.points + mana);
             objects.splice(i, 1);
           }
           continue;
@@ -672,9 +686,9 @@
         // Verifica colisão com objetos
         for (let j = objects.length -1; j>=0; j--) {
           if (rectIntersect(b, objects[j])) {
-            score += objects[j].points || 50;
             objects[j].life -= playerDamage
             if(objects[j].life <= 0){
+              score += objects[j].points * mana;
               objects.splice(j,1);
               deadSound.play();
             }
@@ -730,7 +744,25 @@
 
     // Reiniciar jogo
     function restartGame() {
-      objects = []; bullets = []; score = 0; lives = 100; gameSpeed = 1; running = true; 
+      objects = []; 
+      bullets = []; 
+      dragons = 0;
+      playerDamage = 5;
+      playerSize = 70;
+      playerSpeed = 9;
+      bulletSize = 15;
+      bulletSpeed = 12;
+      enemySize = 60;
+      lives = 100; 
+      maxLives = 100;
+      nextLevel = 50; 
+      level = 1;
+      score = 0;
+      spawnInterval = 400;
+      gameSpeed = 2; 
+      defense = 0;
+      mana = 1;
+      running = true; 
       overlay.classList.remove('visible'); // esconde overlay
       lastSpawn = performance.now(); // reinicia spawn
       lastTime = performance.now(); // reinicia loop
@@ -747,7 +779,7 @@
       document.querySelector('.level').innerHTML = `Nivel ${level}`;
 
       const statusValues = [
-          gameSpeed, 
+          Math.trunc(gameSpeed), 
           delay =`${spawnInterval}ms`,
           lives,
           maxLives,
@@ -848,6 +880,9 @@
           spawnInterval -= 100;
           gameSpeed += 0.5;
         }
+        else if(selectedCard.effect == "increase_mana"){
+          mana += 0.3;
+        }
 
         backGame(0); // Volta pro jogo
       }
@@ -863,13 +898,6 @@
       lastTime = timestamp;
 
       if (running) {
-        if (timestamp - lastSpawn > spawnInterval) { spawnObject(); lastSpawn = timestamp; } // spawn objetos
-        movePlayer();    // atualiza posição do jogador
-        updateObjects(dt); // atualiza objetos
-        updateBullets();   // atualiza balas
-        draw();            // redesenha tudo
-        requestAnimationFrame(loop); // próximo frame
-
         if(score >= nextLevel){
           level ++;
           levelUp()
@@ -877,9 +905,27 @@
           nextLevel = Math.trunc(nextLevel);
         }
 
+
+        if (timestamp - lastSpawn > spawnInterval) {
+          if(level!=10 && level!=20)
+            spawnObject();
+          else{
+            spawnBoss();
+            
+          }
+          lastSpawn = timestamp; 
+        }
+      
+
+
+        updateObjects(dt); // atualiza objetos
+        movePlayer();    // atualiza posição do jogador
+        updateBullets();   // atualiza balas
+        draw();            // redesenha tudo
+        requestAnimationFrame(loop); // próximo frame
+
         levelUpdate.innerHTML = `Nivel: ${level}`;
         scoreUpdate.innerHTML = `Pontuação atual: ${score} <br> ${nextLevel-score} pontos para nivel ${level+1}`;
-
       }
     }
     
