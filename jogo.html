@@ -27,39 +27,62 @@
     }
     canvas { display:block; background-repeat: repeat;}
     
-    /* Overlay para Game Over */
-    #overlay {
-      position: fixed; top: 0; left: 0; right:0; bottom:0;
-      display:flex; 
-      align-items:center; 
-      justify-content:center;
-      background: rgba(0,0,0,0.6);
-      color: white; font-family: Arial, sans-serif; z-index: 10;      
-      visibility: hidden;
-      flex-direction: column; gap: 12px;
-    }
-    #overlay.visible {visibility: visible;}
+    
 
-    button { 
-      padding: 10px 16px; 
-      font-size: 16px; 
-      border-radius:8px; 
-      border:none; 
-      cursor:pointer; 
-    }
-
-    /* Overlay de escolha de cartas */
-    .overlay {
+    /* Estilos para tela de Game Over */
+    #overlay, .overlay  {
       position: fixed;
       top: 0;
       left: 0;
+      right: 0;
+      bottom: 0;
       width: 100%;
       height: 100%;
       background-color: #000000b0;
+      display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      display: none; 
+    }
+    
+    #overlay {
+      visibility: hidden;
+      color: white;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #overlay.visible {visibility: visible;}
+    #overlay h1 {
+      font-size: 3em;
+      margin: 0;
+      color: var(--cor-principal);
+    }
+    #overlay #overlayScore {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      color: var(--cor-texto-vm);
+    }
+
+    #overlay button { 
+      background-color: #000000d2;
+      color: #ff3636;
+      padding: 12px 25px;
+      border: 1px solid #ff3636;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+    }
+    #overlay button:hover {
+      background-color: #1a1a1a;
+      transform: translateY(-2px);
+    }
+
+
+
+    /* Estilos para escolha de cartas */
+    .overlay {
+      display: none;
     }
     .container {
       border: 2px solid var(--cor-principal);
@@ -239,9 +262,9 @@
 
   <!-- Overlay de Game Over -->
   <div id="overlay">
-    <h1 id="overlayTitle">Game Over</h1> <!-- Título do overlay -->
-    <div id="overlayScore">Pontos: 0</div> <!-- Mostra pontuação -->
-    <button id="btnRestart">Reiniciar</button> <!-- Botão para reiniciar -->
+    <h1 id="overlayTitle">Você perdeu!</h1> <!-- Título do overlay -->
+    <div id="overlayScore"></div> <!-- Mostra pontuação -->
+    <button onclick="restartGame()" id="btnRestart">Tentar novamente</button> <!-- Botão para reiniciar -->
   </div>
 
   <!-- Overlay de escolha de cartas -->
@@ -272,7 +295,7 @@
               </div>
 
               <div class="cancel-button-wrapper">
-                  <button class="cancel-level-button" onclick="backGame('cancel')">Cancelar volta +25% dos pontos</button>
+                  <button class="cancel-level-button" onclick="backGame('cancel')">Voltar com +50% dos pontos</button>
               </div>
           </div>
 
@@ -462,10 +485,10 @@
     
 
     //buffs
-    let dragons = 0; //numero de dragões
-    let defense = 0; //defesa do jogador
-    let mana = 1; //mana adicional
-    let field = false;
+    let dragons = 0; // numero de dragões
+    let defense = 0; // defesa do jogador
+    let mana = 1; // multiplicador de mana
+
 
     // Overlay
     const overlay = document.getElementById('overlay'); // overlay de Game Over
@@ -487,6 +510,7 @@
         }
       });
 
+      /* tirei pq os cara azaralharam
       window.addEventListener('keydown', e => { // atira com Enter
         keys[e.key] = true;
 
@@ -494,7 +518,7 @@
             shoot(); // chama a funcao de tiro
             gameSound.play();
         }
-      });
+      });*/
     }
     setTimeout(() => {
       canShoot = true;
@@ -555,10 +579,12 @@
     // Spawn do boss
     function spawnBoss() {
       if (bossFight) return; // Já está em luta contra o boss
-
+      
+      bossFight = true;
+      
       const x = canvas.width / 2 - enemySize / 2; // nasce no meio da tela
-      const y = -enemySize * 2 + 50; // acima da tela
-
+      const y = -enemySize; // acima da tela
+      console.log(level);
       if(level==7){
         setTimeout(() => {
           objects.push({ 
@@ -566,15 +592,15 @@
           });
         }, 5000);
       }
+
       else if(level==15){
+        console.log("spawnou boss final")
         setTimeout(() => {
           objects.push({ 
             type: '15', x, y, width: enemySize * 4, height: enemySize * 4, img: images['15'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: lives, life: 2500 
           });
         }, 5000);
       }
-
-      bossFight = true;
     }
 
 
@@ -723,16 +749,19 @@
             objects[j].life -= playerDamage
             if(objects[j].life <= 0){
               score += objects[j].points * mana;
-              console.log(objects[j])
               deadSound.play();
 
-              if (objects[j].type === '15') {
-                console.log(gameInfinity)
-                if (!gameInfinity) {
-                  endGame();
-                }
-              
+              if (objects[j].type == '7') {
+                bossFight = false; // Libera a flag para o próximo boss poder nascer
               }
+              else if (objects[j].type == '15') {
+                if (gameInfinity) {
+                  bossFight = false;  // continua o jogo no modo infinito
+                }else {
+                  endGame(); // senao termina o jogo
+                }
+              }
+
               objects.splice(j,1);
             }
             bullets.splice(i,1);
@@ -781,35 +810,22 @@
     function endGame() {
       running = false; // para loop
       overlayScore.textContent = 'Pontos: ' + Math.trunc(score); // atualiza pontuação no overlay
-      overlayTitle.textContent = 'Game Over'; // atualiza título
       overlay.classList.add('visible'); // mostra overlay
     }
 
     // Reiniciar jogo
     function restartGame() {
-      objects = []; 
-      bullets = []; 
-      dragons = 0;
-      playerDamage = 5;
-      playerSize = 70;
-      playerSpeed = 9;
-      bulletSize = 15;
-      bulletSpeed = 12;
-      enemySize = 60;
-      lives = 100; 
-      maxLives = 100;
-      nextLevel = 50; 
-      level = 1;
-      score = 0;
-      spawnInterval = 450;
-      gameSpeed = 2; 
-      defense = 0;
-      mana = 1;
-      running = true; 
-      overlay.classList.remove('visible'); // esconde overlay
-      lastSpawn = performance.now(); // reinicia spawn
-      lastTime = performance.now(); // reinicia loop
-      requestAnimationFrame(loop); // inicia loop novamente
+      try {
+        localStorage.clear(); // limpa cache da pagina
+      } catch (e) {
+        console.error("Não deu pra limpar o cache", e);
+      }
+      try {
+          sessionStorage.clear(); // limpa sessão
+      } catch (e) {
+          console.error("Nao deu pra reiniciar a sessao", e);
+      }
+      window.location.reload(true); // recarrega a página
     }
 
 
@@ -949,11 +965,12 @@
         if (timestamp - lastSpawn > spawnInterval) {
           if(level!=7 && level!=15){
             spawnObject();
+            lastSpawn = timestamp; 
           }
           else{
+            console.log("spawnando boss")
             spawnBoss();
           }
-          lastSpawn = timestamp; 
         }
       
         updateObjects(dt); // atualiza objetos
@@ -961,7 +978,7 @@
         updateBullets();   // atualiza balas
         draw();            // redesenha tudo
         requestAnimationFrame(loop); // próximo frame
-
+        console.log(bossFight)
         levelUpdate.innerHTML = `Nivel: ${level}`;
         scoreUpdate.innerHTML = `Pontuação atual: ${Math.trunc(score)} <br> ${Math.trunc(nextLevel-score)} pontos para nivel ${level+1}`;
       }
@@ -972,7 +989,7 @@
       overlay_powerup.style.display = "none";
 
       if (arg == 'cancel') {
-        score = score + ((nextLevel-score) / 4);
+        score = score + ((nextLevel-score) / 2);
         running = true;
         requestAnimationFrame(loop);
       }else{
