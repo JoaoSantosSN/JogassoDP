@@ -30,7 +30,7 @@
     
 
     /* Estilos para tela de Game Over */
-    #overlay, .overlay  {
+    #overlay, .overlay, #overlay-win, #overlay-pause {
       position: fixed;
       top: 0;
       left: 0;
@@ -64,7 +64,7 @@
     }
 
     #overlay button { 
-      background-color: #000000d2;
+      background-color: black;
       color: #ff3636;
       padding: 12px 25px;
       border: 1px solid #ff3636;
@@ -79,6 +79,60 @@
     }
 
 
+    /* estilos para o overlay de pausa */
+    #overlay-pause {
+      display: none;
+      flex-direction: column;
+    }
+    #overlay-pause h1{
+      font-size: 3em;
+      margin: 0;
+      color: var(--cor-principal);
+    }
+    #overlay-pause p{
+      font-size: 1.5em;
+      margin: 10px 0 20px 0;
+      color: var(--cor-texto-vm);
+    }
+    #overlay-pause button { 
+      background-color: black;
+      color: #ff3636;
+      padding: 12px 25px;
+      border: 1px solid #ff3636;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+      margin: 5px;
+    }
+
+
+    /* estilos para o overlay de vitoria */
+    #overlay-win {
+      display: none;
+      flex-direction: column;
+    }
+    #overlay-win h1{
+      font-size: 3em;
+      margin: 0;
+      color: var(--cor-principal);
+    }
+    #overlay-win p{
+      font-size: 1.5em;
+      margin: 10px 0 20px 0;
+      color: var(--cor-texto-vm);
+    }
+    #overlay-win button { 
+      background-color: black;
+      color: #ff3636;
+      padding: 12px 25px;
+      border: 1px solid #ff3636;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+      margin: 5px;
+    }
 
     /* Estilos para escolha de cartas */
     .overlay {
@@ -267,6 +321,20 @@
     <button onclick="restartGame()" id="btnRestart">Tentar novamente</button> <!-- Botão para reiniciar -->
   </div>
 
+  <div id="overlay-win">
+    <h1>Você venceu!</h1>
+    <P>Parabens, agora você é o ser mais poderoso do universo.</P>
+    <button onclick="restartGame()">Jogar denovo</button>
+    <button onclick="window.location.href='/'">voltar para o menu</button>
+  </div>
+
+  <div id="overlay-pause">
+    <h1>Pogo pausado</h1>
+    <P>Presione esc novamente para voltar ao jogo</P>
+    <button onclick="restartGame()">Reiniciar partida</button>
+    <button onclick="window.location.href='/'">voltar para o menu</button>
+  </div>
+
   <!-- Overlay de escolha de cartas -->
   <div class="overlay" id="power-up-overlay">
       <div class="container">
@@ -401,9 +469,9 @@
       { id: '8',  src: 'personagens/mago2.png',     dangerous: true, points: 30, nivelBase: 8,  enemyDamage: 35, life: 45 },
       { id: '9',  src: 'personagens/akaza.png',     dangerous: true, points: 35, nivelBase: 9,  enemyDamage: 40, life: 55 }, 
       { id: '10', src: 'personagens/planta.png',    dangerous: true, points: 40, nivelBase: 10, enemyDamage: 45, life: 65 }, 
-      { id: '11', src: 'personagens/Kokoshibu.png', dangerous: true, points: 50, nivelBase: 11, enemyDamage: 55, life: 80 },
-      { id: '12', src: 'personagens/bombado.png',   dangerous: true, points: 60, nivelBase: 12, enemyDamage: 65, life: 100 },
-      { id: '13', src: 'personagens/muzan.png',     dangerous: true, points: 75, nivelBase: 13, enemyDamage: 80, life: 125 },
+      { id: '11', src: 'personagens/Kokoshibu.png', dangerous: true, points: 50, nivelBase: 11, enemyDamage: 55, life: 70 },
+      { id: '12', src: 'personagens/bombado.png',   dangerous: true, points: 60, nivelBase: 12, enemyDamage: 65, life: 80 },
+      { id: '13', src: 'personagens/muzan.png',     dangerous: true, points: 75, nivelBase: 13, enemyDamage: 80, life: 90 },
         
       
       { id: '7',  src: 'personagens/miniboss.png'},
@@ -426,7 +494,7 @@
 
     let gameInfinity = false; // flag para modo infinito
     const infinity = params.get("infinity") // tenta pegar a variavel infinity da url
-    if(infinity){
+    if(infinity){ // se tiver parametro
       gameInfinity = true;// ativa modo infinito
     }
 
@@ -496,34 +564,45 @@
     const overlayScore = document.getElementById('overlayScore'); // pontuação do overlay
     document.getElementById('btnRestart').addEventListener('click', restartGame); // botão reiniciar chama função restartGame
 
+    window.addEventListener('keydown', e => {
+      keys[e.key] = true;
+
+      if (e.key === "Escape") {
+        if (e.repeat) return; // nao faz nada se segurar
+
+        if (running) {
+          running = false; // pausa o jogo
+          document.getElementById('overlay-pause').style.display = 'flex'; // mostra overlay de pausa
+          gameSound.pause(); // pausa a musica
+        } else {
+          document.getElementById('overlay-pause').style.display = 'none'; // esconde overlay de pausa
+          gameSound.play(); // toca a musica
+          running = true; // resume o jogo
+          lastTime = performance.now(); // 
+          requestAnimationFrame(loop); // reinicia o loop do jogo
+        }
+      }
+    });
 
 
     // Controles do tiro
-    let canShoot = true; // variavel pra permitir tiro
-    const COOLDOWN = 600; // delay pro próximo tiro 
-    if (canShoot) {
-      window.addEventListener('mousedown', e => { // atira com clique do mouse
-        keys[e.key] = true;
-        if (e.button === 0) { 
-          shoot(); // chama a funcao de tiro
-          gameSound.play();
-        }
-      });
+    window.addEventListener('mousedown', e => { // atira com clique do mouse
+      keys[e.key] = true;
+      if (e.button === 0) { 
+        shoot(); // chama a funcao de tiro
+        gameSound.play();
+      }
+    });
 
-      /* tirei pq os cara azaralharam
-      window.addEventListener('keydown', e => { // atira com Enter
-        keys[e.key] = true;
+    window.addEventListener('keydown', e => { // atira com Enter
+      keys[e.key] = true;
 
-        if (e.key === "Enter") {
-            shoot(); // chama a funcao de tiro
-            gameSound.play();
-        }
-      });*/
-    }
-    setTimeout(() => {
-      canShoot = true;
-    }, COOLDOWN);
-
+      if (e.key === "Enter") {
+        if (e.repeat) return; // nao faz nada se segurar
+        shoot(); // chama a funcao de tiro
+        gameSound.play();
+      }
+    });
 
   
     // Escolher tipo de objeto baseado na probabilidade
@@ -580,24 +659,23 @@
     function spawnBoss() {
       if (bossFight) return; // Já está em luta contra o boss
       
-      bossFight = true;
+      bossFight = true; // ativa a bossFight
       
       const x = canvas.width / 2 - enemySize / 2; // nasce no meio da tela
       const y = -enemySize; // acima da tela
-      console.log(level);
+
       if(level==7){
         setTimeout(() => {
           objects.push({ 
-            type: '7', x, y, width: enemySize * 3, height: enemySize * 3, img: images['7'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: lives, life: 1500 
+            type: '7', x, y, width: enemySize * 3, height: enemySize * 3, img: images['7'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: maxLives, life: 1500 
           });
         }, 5000);
       }
 
       else if(level==15){
-        console.log("spawnou boss final")
         setTimeout(() => {
           objects.push({ 
-            type: '15', x, y, width: enemySize * 4, height: enemySize * 4, img: images['15'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: lives, life: 2500 
+            type: '15', x, y, width: enemySize * 4, height: enemySize * 4, img: images['15'], dangerous: true, points: (nextLevel-score)+100, enemyDamage: maxLives, life: 2500 
           });
         }, 5000);
       }
@@ -666,26 +744,26 @@
       keys[e.key] = true; // seta tecla como pressionada
     });
     window.addEventListener('keyup', e => { keys[e.key] = false; }); 
-    function movePlayer() {
+    function movePlayer() { // função pra mover o jogador
       if (keys['a'] && player.x > 0) {// esquerda
-          player.x -= player.speed;
-          barraX -= player.speed;
+        player.x -= player.speed;
+        barraX -= player.speed;
       }
       if (keys['d'] && player.x < canvas.width - player.width) {//direita
-          player.x += player.speed;
-          barraX += player.speed;
+        player.x += player.speed;
+        barraX += player.speed;
       }
       if (keys['w'] && player.y > 0) {//cima
-          player.y -= player.speed;
-          barraY -= player.speed;
+        player.y -= player.speed;
+        barraY -= player.speed;
       }
       if (keys['s'] && player.y < canvas.height - player.height) {//baixo
-          player.y += player.speed;
-          barraY += player.speed;
+        player.y += player.speed;
+        barraY += player.speed;
       }
     }
 
-  
+
 
     // Atualizar objetos
     function updateObjects(dt) {
@@ -714,7 +792,7 @@
             objects.splice(i, 1); // remove o objeto
             hitSound.play(); // toca som de dano
 
-            if (lives <= 0) endGame(); //acaba o jogo se vida <= 0
+            if (lives <= 0) gameOver(); //acaba o jogo se vida <= 0
           } else {
             objects.splice(i, 1); // senao remove o objeto
           }
@@ -729,12 +807,13 @@
       }
     }
 
+
     // Atualizar balas (movimento horizontal)
     function updateBullets() {
       for (let i = bullets.length -1; i>=0; i--) {
-        const b = bullets[i];
-        b.x += b.speedX;
-        b.y += b.speedY;
+        const b = bullets[i]; // pega a bala
+        b.x += b.speedX; // atualiza posição x
+        b.y += b.speedY; // atualiza posição y
 
         // Remove bala se sair da tela
         if (b.x < -50 || b.x > canvas.width + 50 || 
@@ -745,26 +824,28 @@
 
         // Verifica colisão com objetos
         for (let j = objects.length -1; j>=0; j--) {
-          if (rectIntersect(b, objects[j])) {
-            objects[j].life -= playerDamage
-            if(objects[j].life <= 0){
-              score += objects[j].points * mana;
-              deadSound.play();
+          if (rectIntersect(b, objects[j])) { // se colidir
+            objects[j].life -= playerDamage // diminui vida do inimigo
+
+            if(objects[j].life <= 0){ // se o inimigo morrer
+              score += objects[j].points * mana; // aumenta pontuação com multiplicador de mana
+              deadSound.play(); // toca som de morte
 
               if (objects[j].type == '7') {
-                bossFight = false; // Libera a flag para o próximo boss poder nascer
+                bossFight = false; // coloca bossFight como falso
               }
               else if (objects[j].type == '15') {
                 if (gameInfinity) {
-                  bossFight = false;  // continua o jogo no modo infinito
+                  bossFight = false;  // continua o jogo se tiver no modo infinito
                 }else {
-                  endGame(); // senao termina o jogo
+                  running = false; // para o jogo
+                  document.getElementById('overlay-win').style.display = 'flex'; // vence o jogo
                 }
               }
 
-              objects.splice(j,1);
+              objects.splice(j,1); // remove o inimigo
             }
-            bullets.splice(i,1);
+            bullets.splice(i,1); // remove a bala  
             break;
           }
         }
@@ -807,7 +888,7 @@
     }
 
     // Fim de jogo
-    function endGame() {
+    function gameOver() {
       running = false; // para loop
       overlayScore.textContent = 'Pontos: ' + Math.trunc(score); // atualiza pontuação no overlay
       overlay.classList.add('visible'); // mostra overlay
@@ -818,12 +899,12 @@
       try {
         localStorage.clear(); // limpa cache da pagina
       } catch (e) {
-        console.error("Não deu pra limpar o cache", e);
+        console.error(e);
       }
       try {
-          sessionStorage.clear(); // limpa sessão
+        sessionStorage.clear(); // limpa sessão
       } catch (e) {
-          console.error("Nao deu pra reiniciar a sessao", e);
+        console.error(e);
       }
       window.location.reload(true); // recarrega a página
     }
@@ -835,9 +916,9 @@
       objects = [] // limpa objetos na tela
 
 
-      document.querySelector('.level').innerHTML = `Nivel ${level}`;
+      document.querySelector('.level').innerHTML = `Nivel ${level}`;// atualiza nivel no overlay
 
-      const statusValues = [
+      const statusValues = [ // valores dos status em sequencia
           Math.trunc(gameSpeed), 
           delay =`${spawnInterval}ms`,
           lives,
@@ -852,7 +933,7 @@
           enemySize,
       ];
       
-      // Iterar sobre os elementos status-item
+      // selecionar elementos dos status e atualizar valores
       const statusItems = document.querySelectorAll('.status-panel .status-item strong');
       statusItems.forEach((strongElement, index) => {
         if (statusValues[index] !== undefined) {
@@ -860,20 +941,20 @@
         }
       });
 
-      
-      const availableIndices = Array.from({length: CARDS.length}, (_, i) => i);
-      currentSelectedCards = []; // Limpa a seleção anterior
 
+      // selecionar 3 cartas aleatórias
+      const availableIndices = Array.from({length: CARDS.length}, (_, i) => i); 
+      currentSelectedCards = []; // Limpa a seleção anterior
       while (currentSelectedCards.length < 3 && availableIndices.length > 0) {
-          const randomIndex = Math.floor(Math.random() * availableIndices.length);
-          const cardIndex = availableIndices[randomIndex];
+          const randomIndex = Math.floor(Math.random() * availableIndices.length); // índice aleatório
+          const cardIndex = availableIndices[randomIndex]; // índice da carta
           
-          currentSelectedCards.push(CARDS[cardIndex]);
-          availableIndices.splice(randomIndex, 1);
+          currentSelectedCards.push(CARDS[cardIndex]); // adiciona carta à seleção
+          availableIndices.splice(randomIndex, 1); // remove índice para evitar repetição
       }
       
       
-      const cardsHTML = currentSelectedCards.map((card, index) => {
+      const cardsHTML = currentSelectedCards.map((card, index) => {// gera HTML para cada carta
           return `
               <div class="card" onclick="selectCard(${index})"> 
                   <div class="card-title">${card.name}</div>
@@ -883,22 +964,21 @@
           `;
       }).join('');
       const cardSelectionElement = document.querySelector('.card-selection');
-      cardSelectionElement.innerHTML = cardsHTML;
+      cardSelectionElement.innerHTML = cardsHTML; // atualiza o HTML das cartas
       
       overlayLevel = document.getElementById("power-up-overlay");
-      overlayLevel.style.display = "flex";
+      overlayLevel.style.display = "flex"; // mostra overlay de escolha de cartas
     }
 
 
     // Selecionar carta
     function selectCard(cardIndex) {
-        if (currentSelectedCards.length > cardIndex) {
-            const selectedCard = currentSelectedCards[cardIndex];
+      if (currentSelectedCards.length > cardIndex) {// verifica se o índice é válido
+        const selectedCard = currentSelectedCards[cardIndex]; // pega a carta selecionada
         
-        //condicoes para efeito da carta escolhida
+        //logica dos efeitos das cartas
         if(selectedCard.effect == "increase_health"){
           let num = Math.floor(Math.random() * (maxLives - lives));
-
           lives += num;
         }
 
@@ -949,9 +1029,9 @@
     levelUpdate = document.getElementById('level');
     // Loop principal
     function loop(timestamp) {
-      if (!lastTime) lastTime = timestamp;
+      if (!lastTime) lastTime = timestamp; // inicializa último tempo
       const dt = timestamp - lastTime; // delta time
-      lastTime = timestamp;
+      lastTime = timestamp; // atualiza último tempo
 
       if (running) {
         if(score >= nextLevel){
@@ -968,17 +1048,16 @@
             lastSpawn = timestamp; 
           }
           else{
-            console.log("spawnando boss")
             spawnBoss();
           }
         }
       
         updateObjects(dt); // atualiza objetos
-        movePlayer();    // atualiza posição do jogador
-        updateBullets();   // atualiza balas
-        draw();            // redesenha tudo
+        movePlayer(); // atualiza posição do jogador
+        updateBullets(); // atualiza balas
+        draw(); // redesenha tudo
         requestAnimationFrame(loop); // próximo frame
-        console.log(bossFight)
+
         levelUpdate.innerHTML = `Nivel: ${level}`;
         scoreUpdate.innerHTML = `Pontuação atual: ${Math.trunc(score)} <br> ${Math.trunc(nextLevel-score)} pontos para nivel ${level+1}`;
       }
